@@ -2,6 +2,7 @@
 
 import {useEffect,useState} from "react";
 import {supabase} from "../../lib/supabase";
+import "./platform.css";
 import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw} from "lucide-react";
 
 type School={id:string;name:string;slug:string;status:string;city:string|null;phone:string|null;created_at:string};
