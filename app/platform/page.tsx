@@ -33,10 +33,10 @@ export default function PlatformPage(){
    e.preventDefault();setMsg("");setBusy(true);
    const finalSlug=makeSlug(slug||name);
    if(!name||!finalSlug){setMsg("Nom et identifiant de l'école obligatoires.");setBusy(false);return}
-   const {data:s,error}=await supabase.from("schools").insert({name,slug:finalSlug,city,status:"trial",created_by:(await supabase.auth.getUser()).data.user?.id,trial_ends_at:new Date(Date.now()+14*86400000).toISOString()}).select().single();
-   if(error){setMsg(error.message);setBusy(false);return}
-   if(plan){const {error:e2}=await supabase.from("school_subscriptions").insert({school_id:s.id,plan_id:plan,status:"trial",starts_at:new Date().toISOString(),ends_at:new Date(Date.now()+14*86400000).toISOString()});if(e2)setMsg(e2.message)}
-   setName("");setSlug("");setMsg("École créée avec une période d'essai de 14 jours.");setBusy(false);load();
+   const {data,error}=await supabase.functions.invoke("create-school",{body:{name:name.trim(),slug:finalSlug,city:city.trim(),plan_id:plan||null}});
+   if(error){setMsg("Erreur de connexion au serveur : "+(error.message||"réessayez."));setBusy(false);return}
+   if(data?.error){setMsg(data.error);setBusy(false);return}
+   setName("");setSlug("");setMsg("École créée avec succès. Vous pouvez maintenant créer son administrateur.");setBusy(false);await load();
  }
  async function createAdmin(e:React.FormEvent){
    e.preventDefault();if(!adminSchool)return;
