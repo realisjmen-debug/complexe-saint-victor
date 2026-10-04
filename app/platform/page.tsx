@@ -3,13 +3,13 @@
 import {useEffect,useState} from "react";
 import {supabase} from "../../lib/supabase";
 import "./platform.css";
-import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw} from "lucide-react";
+import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw,UserPlus,X} from "lucide-react";
 
 type School={id:string;name:string;slug:string;status:string;city:string|null;phone:string|null;created_at:string};
 type Plan={id:string;name:string;label:string;price_monthly:number;price_yearly:number};
 
 export default function PlatformPage(){
- const [ok,setOk]=useState(false),[loading,setLoading]=useState(true),[schools,setSchools]=useState<School[]>([]),[plans,setPlans]=useState<Plan[]>([]),[name,setName]=useState(""),[slug,setSlug]=useState(""),[city,setCity]=useState("Kinshasa"),[plan,setPlan]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+ const [ok,setOk]=useState(false),[loading,setLoading]=useState(true),[schools,setSchools]=useState<School[]>([]),[plans,setPlans]=useState<Plan[]>([]),[name,setName]=useState(""),[slug,setSlug]=useState(""),[city,setCity]=useState("Kinshasa"),[plan,setPlan]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");\n const [adminSchool,setAdminSchool]=useState<School|null>(null),[admin,setAdmin]=useState({full_name:"",email:"",phone:"",password:""});
  async function load(){
    setLoading(true);
    const {data:u}=await supabase.auth.getUser();
@@ -38,6 +38,15 @@ export default function PlatformPage(){
    if(plan){const {error:e2}=await supabase.from("school_subscriptions").insert({school_id:s.id,plan_id:plan,status:"trial",starts_at:new Date().toISOString(),ends_at:new Date(Date.now()+14*86400000).toISOString()});if(e2)setMsg(e2.message)}
    setName("");setSlug("");setMsg("École créée avec une période d'essai de 14 jours.");setBusy(false);load();
  }
+ async function createAdmin(e:React.FormEvent){
+   e.preventDefault();if(!adminSchool)return;
+   setBusy(true);setMsg("");
+   const {data,error}=await supabase.functions.invoke("create-school-admin",{body:{school_id:adminSchool.id,...admin}});
+   if(error){setMsg(error.message||"Impossible de créer l'administrateur.");setBusy(false);return}
+   if(data?.error){setMsg(data.error);setBusy(false);return}
+   setMsg("Administrateur créé pour "+adminSchool.name+". Il peut maintenant se connecter avec son email et le mot de passe défini.");
+   setAdmin({full_name:"",email:"",phone:"",password:""});setAdminSchool(null);setBusy(false);
+ }
  async function toggle(s:School){
    const next=s.status==="suspended"?"active":"suspended";
    const {error}=await supabase.from("schools").update({status:next,updated_at:new Date().toISOString()}).eq("id",s.id);
@@ -58,9 +67,20 @@ export default function PlatformPage(){
       <button className="btn full" disabled={busy}><Plus size={17}/>{busy?"Création…":"Créer l'école"}</button>
     </form>
     <div className="panel"><div className="sectionTitle"><Building2/><div><h3>Écoles enregistrées</h3><p>{schools.length} établissement(s)</p></div></div>
-      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><a className="iconBtn" href={"/?school="+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
+      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/?school="+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
     </div>
    </div>
+   {adminSchool&&<div className="modalBackdrop" onClick={()=>!busy&&setAdminSchool(null)}>
+     <form className="panel adminModal" onSubmit={createAdmin} onClick={e=>e.stopPropagation()}>
+       <div className="sectionTitle"><UserPlus/><div><h3>Administrateur de l'école</h3><p>{adminSchool.name}</p></div><button type="button" className="iconBtn" onClick={()=>setAdminSchool(null)} disabled={busy}><X size={18}/></button></div>
+       <label>Nom complet<input required value={admin.full_name} onChange={e=>setAdmin({...admin,full_name:e.target.value})} placeholder="Nom du promoteur"/></label>
+       <label>Email de connexion<input required type="email" value={admin.email} onChange={e=>setAdmin({...admin,email:e.target.value})} placeholder="administration@ecole.cd"/></label>
+       <label>Téléphone<input value={admin.phone} onChange={e=>setAdmin({...admin,phone:e.target.value})} placeholder="+243…"/></label>
+       <label>Mot de passe initial<input required minLength={8} type="password" value={admin.password} onChange={e=>setAdmin({...admin,password:e.target.value})} placeholder="8 caractères minimum"/></label>
+       <small>Le compte sera créé avec le rôle <b>Promoteur / Propriétaire</b> et aura accès à l'espace complet de cette école.</small>
+       <button className="btn full" disabled={busy}><UserPlus size={17}/>{busy?"Création du compte…":"Créer l'administrateur"}</button>
+     </form>
+   </div>}
    <div className="panel roadmap"><h3>Modèle commercial</h3><div className="road"><span><b>1</b>Créer l'école</span><span><b>2</b>Choisir le plan</span><span><b>3</b>Créer l'administrateur</span><span><b>4</b>Attribuer le sous-domaine</span><span><b>5</b>Activer / suspendre</span></div></div>
  </div>
 }
