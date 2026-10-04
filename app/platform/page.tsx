@@ -14,8 +14,8 @@ export default function PlatformPage(){
    setLoading(true);
    const {data:u}=await supabase.auth.getUser();
    if(!u.user){setLoading(false);return}
-   const {data:a}=await supabase.from("platform_admins").select("user_id,active").eq("user_id",u.user.id).eq("active",true).maybeSingle();
-   setOk(!!a);
+   const {data:a}=await supabase.rpc("is_platform_admin");
+   setOk(a===true);
    if(a){
      const [s,p]=await Promise.all([
        supabase.from("schools").select("id,name,slug,status,city,phone,created_at").order("created_at",{ascending:false}),
