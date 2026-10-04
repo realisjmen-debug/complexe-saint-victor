@@ -29,7 +29,7 @@ export default function PlatformPage(){
    setLoading(false);
  }
  useEffect(()=>{load()},[]);
- function makeSlug(v:string){return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,48)}
+ function makeSlug(v:string){return v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9-]+/g,"-").replace(/-+/g,"-").replace(/^-+|-+$/g,"").slice(0,48)}
  async function createSchool(e:React.FormEvent){
    e.preventDefault();setMsg("");setBusy(true);
    const finalSlug=makeSlug(slug||name);
