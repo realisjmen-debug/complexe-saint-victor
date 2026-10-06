@@ -1,0 +1,10 @@
+project_id = "batcggonqggzdgsypzfc"
+
+[functions.create-school-user]
+verify_jwt = true
+
+[functions.register-student]
+verify_jwt = true
+
+[functions.parent-portal]
+verify_jwt = false
