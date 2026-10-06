@@ -18,3 +18,9 @@ grant update on public.schools to authenticated;
 -- Server-only profile bootstrap function.
 revoke all on function public.create_school_profile(uuid,uuid,uuid,text,text) from public, anon, authenticated;
 grant execute on function public.create_school_profile(uuid,uuid,uuid,text,text) to service_role;
+
+
+grant execute on function public.my_school_id() to authenticated;
+grant execute on function public.my_role() to authenticated;
+revoke execute on function public.my_school_id() from anon;
+revoke execute on function public.my_role() from anon;
