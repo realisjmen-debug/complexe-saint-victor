@@ -35,7 +35,15 @@ export default function PlatformPage(){
    const finalSlug=makeSlug(slug||name);
    if(!name||!finalSlug){setMsg("Nom et identifiant de l'école obligatoires.");setBusy(false);return}
    const {data,error}=await supabase.functions.invoke("create-school",{body:{name:name.trim(),slug:finalSlug,city:city.trim(),plan_id:plan||null}});
-   if(error){setMsg("Erreur de connexion au serveur : "+(error.message||"réessayez."));setBusy(false);return}
+   if(error){
+      let detail=error.message||"réessayez.";
+      try{
+        const ctx=(error as any).context;
+        if(ctx?.json){const body=await ctx.json();if(body?.error)detail=body.error;}
+        else if(ctx?.text){const raw=await ctx.text();try{const body=JSON.parse(raw);if(body?.error)detail=body.error;}catch{}}
+      }catch{}
+      setMsg(detail);setBusy(false);return
+    }
    if(data?.error){setMsg(data.error);setBusy(false);return}
    setName("");setSlug("");setMsg("École créée avec succès. Vous pouvez maintenant créer son administrateur.");setBusy(false);await load();
  }
