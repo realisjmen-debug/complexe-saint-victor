@@ -21,7 +21,7 @@ export default function Home(){
  const can=(...r:string[])=>r.includes(role);
  const nav:any[]=[
   ["dashboard","Tableau de bord",LayoutDashboard,true],
-  ["students","Élèves",Users,true],
+  ["students","Élèves",Users,can("promoteur","directeur","administrateur","secretaire")],
   ["parents","Parents",HeartHandshake,can("promoteur","directeur","administrateur","secretaire")],
   ["enrollments","Inscriptions",ClipboardList,can("promoteur","directeur","administrateur","etudes","secretaire")],
   ["studies","Études",GraduationCap,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant")],
