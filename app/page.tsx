@@ -31,7 +31,7 @@ export default function Home(){
   ["studies","Études",GraduationCap,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant")],
   ["attendance","Présences",CalendarCheck,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant","secretaire")],
   ["schedule","Emploi du temps",CalendarCheck,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant","secretaire")],
-  ["grades","Notes & évaluations",BarChart3,can("administrateur","etudes","enseignant")],
+  ["grades","Notes & évaluations",BarChart3,can("etudes","enseignant")],
   ["reportcards","Bulletins",FileText,can("promoteur","directeur","administrateur","etudes","enseignant","secretaire")],
   ["finance","Finances",Wallet,can("promoteur","directeur","finance","comptable")],
   ["staff","Personnel",UserCog,can("promoteur","directeur","administrateur")],
@@ -99,7 +99,7 @@ function StudentCard({student,schoolId,onClose}:any){
 function Studies({profile,can}:any){
  const [tab,setTab]=useState("classes"),[rows,setRows]=useState<any[]>([]),[show,setShow]=useState(false),[editId,setEditId]=useState<string|null>(null),[msg,setMsg]=useState("");
  const [form,setForm]=useState<any>({name:"",room:"",capacity:"",section_name:"",option_name:"",first_name:"",last_name:"",phone:"",subject:"",code:"",coefficient:"1",section_group:"Humanités générales",stage:"",option_stage:"",room_type:"Classe"});
- const editable=can("administrateur","etudes");
+ const editable=can("etudes");
  const tabs=[["classes","Classes"],["teachers","Enseignants"],["subjects","Matières"],["options","Options / filières"],["rooms","Salles"]];
  async function load(){const table=tab==="teachers"?"teachers":tab==="subjects"?"subjects":tab==="options"?"school_options":tab==="rooms"?"rooms":"classes";const {data}=await supabase.from(table).select("*").eq("school_id",profile.school_id).order("name");setRows(data||[])}
  useEffect(()=>{load()},[profile.school_id,tab]);
@@ -225,7 +225,7 @@ function Schedule({profile,can}:any){
  useEffect(()=>{load()},[profile.school_id]);
  async function save(e:React.FormEvent){e.preventDefault();setMsg("");const {error}=await supabase.from("schedules").insert({...form,school_id:profile.school_id,weekday:Number(form.weekday)});if(error)setMsg(error.message);else{setShow(false);setForm({...form,start_time:"08:00",end_time:"09:00",room:""});load()}}
  const days=["","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
- return <><div className="head"><div><h1>Emploi du temps</h1><p>Planifiez les cours par classe, enseignant, matière et salle.</p></div>{can("administrateur","etudes")&&<button className="btn" onClick={()=>setShow(!show)}><Plus size={17}/> Ajouter un cours</button>}</div>
+ return <><div className="head"><div><h1>Emploi du temps</h1><p>Planifiez les cours par classe, enseignant, matière et salle.</p></div>{can("etudes")&&<button className="btn" onClick={()=>setShow(!show)}><Plus size={17}/> Ajouter un cours</button>}</div>
  {show&&<form className="panel formGrid" onSubmit={save}><label>Classe<select required value={form.class_id} onChange={e=>setForm({...form,class_id:e.target.value})}><option value="">Choisir…</option>{classes.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Matière<select value={form.subject_id} onChange={e=>setForm({...form,subject_id:e.target.value})}><option value="">Choisir…</option>{subjects.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Enseignant<select value={form.teacher_id} onChange={e=>setForm({...form,teacher_id:e.target.value})}><option value="">Choisir…</option>{teachers.map(x=><option key={x.id} value={x.id}>{x.last_name} {x.first_name}</option>)}</select></label><label>Jour<select value={form.weekday} onChange={e=>setForm({...form,weekday:e.target.value})}>{days.slice(1).map((d,i)=><option key={d} value={i+1}>{d}</option>)}</select></label><label>Début<input type="time" required value={form.start_time} onChange={e=>setForm({...form,start_time:e.target.value})}/></label><label>Fin<input type="time" required value={form.end_time} onChange={e=>setForm({...form,end_time:e.target.value})}/></label><label>Salle<input value={form.room} onChange={e=>setForm({...form,room:e.target.value})}/></label>{msg&&<div className="error">{msg}</div>}<button className="btn"><Save size={16}/> Enregistrer</button></form>}
  <div className="panel tableWrap"><table><thead><tr><th>Jour</th><th>Horaire</th><th>Classe</th><th>Matière</th><th>Enseignant</th><th>Salle</th></tr></thead><tbody>{rows.map(x=><tr key={x.id}><td>{days[x.weekday]}</td><td>{x.start_time?.slice(0,5)}–{x.end_time?.slice(0,5)}</td><td>{x.classes?.name}</td><td>{x.subjects?.name||"—"}</td><td>{x.teachers?x.teachers.last_name+" "+x.teachers.first_name:"—"}</td><td>{x.room||"—"}</td></tr>)}{!rows.length&&<tr><td colSpan={6} className="empty">Aucun cours planifié.</td></tr>}</tbody></table></div></>
 }
