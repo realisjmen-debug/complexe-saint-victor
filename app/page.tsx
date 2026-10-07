@@ -655,7 +655,10 @@ function Announcements({profile,can}:any){
 }
 
 function Staff({profile}:any){
- const [rows,setRows]=useState<any[]>([]),[show,setShow]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState(""),[teacherCode,setTeacherCode]=useState(""),[form,setForm]=useState<any>({full_name:"",email:"",phone:"",password:"",role_name:"secretaire"});
+ const [rows,setRows]=useState<any[]>([]);
+  const [show,setShow]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+  const [teacherCode,setTeacherCode]=useState("");
+  const [form,setForm]=useState<any>({full_name:"",email:"",phone:"",password:"",role_name:"secretaire"});
  async function load(){const {data}=await supabase.from("profiles").select("id,full_name,phone,active,roles(name,label)").eq("school_id",profile.school_id).order("created_at",{ascending:false});setRows(data||[])}
  useEffect(()=>{load()},[profile.school_id]);
  async function save(e:React.FormEvent){e.preventDefault();setBusy(true);setMsg("");const {data,error}=await supabase.functions.invoke("create-school-user",{body:{school_id:profile.school_id,...form}});if(error){let detail=error.message;try{const b=await (error as any).context?.json?.();if(b?.error)detail=b.error}catch{}setMsg(detail||"Création impossible.");setBusy(false);return}if(data?.error){setMsg(data.error);setBusy(false);return}setMsg("Utilisateur créé et accès attribué.");setTeacherCode(data?.user?.access_code||"");setForm({full_name:"",email:"",phone:"",password:"",role_name:"secretaire"});setShow(false);await load();setBusy(false)}
