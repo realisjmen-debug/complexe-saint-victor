@@ -34,7 +34,7 @@ export default function Home(){
  if(!session&&!requestedSlug)return <SoftwareLanding/>;
  if(!session)return <Login school={school} email={email} password={password} setEmail={setEmail} setPassword={setPassword} busy={busy} error={error} onSubmit={login}/>;
  if(!profile&&requestedSlug)return <Login school={school} email={email} password={password} setEmail={setEmail} setPassword={setPassword} busy={busy} error={error} onSubmit={login}/>;
- if(!profile)return <div className="center"><ShieldCheck size={42}/><h2>Compte en attente</h2><p>{error||"Compte authentifié sans profil scolaire actif."}</p><button className="btn" onClick={logout}>Se déconnecter</button></div>;
+ if(!profile)return <div className="center"><ShieldCheck size={42}/><h2>Compte en attente</h2><p>{error||"Compte authentifié sans profil scolaire actif."}</p><p style={{marginTop:8,fontSize:14,opacity:.75}}>Compte actuellement connecté : <b>{session?.user?.email||"inconnu"}</b></p><button className="btn" onClick={logout}>Changer de compte</button></div>;
  const expired=subscription?.ends_at&&new Date(subscription.ends_at).getTime()<Date.now();
  const suspended=subscription && !["trial","active"].includes(subscription.status);
  if(suspended||expired)return <div className="center"><ShieldCheck size={42}/><h2>Accès à l’établissement suspendu</h2><p>L’abonnement de <b>{school?.name}</b> est {expired?"arrivé à expiration":"actuellement "+subscription.status}. Contactez le Super Administrateur pour réactiver l’accès.</p><button className="btn" onClick={logout}>Se déconnecter</button></div>;
