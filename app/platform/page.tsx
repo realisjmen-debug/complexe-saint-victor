@@ -64,7 +64,7 @@ export default function PlatformPage(){
  if(loading)return <div className="center"><div className="loader"/><p>Chargement de la plateforme…</p></div>;
  if(!ok)return <div className="center"><ShieldCheck size={42}/><h2>Accès refusé</h2><p>Cette zone est réservée à l'administrateur de la plateforme.</p><a className="btn" href="/">Retour à l'école</a></div>;
  return <div className="platform">
-   <div className="platformTop"><div><span className="eyebrow">MUTSHI B ÉCOLE SUITE</span><h1>Administration de la plateforme</h1><p>Gérez plusieurs établissements depuis une seule plateforme.</p></div><button className="btn light" onClick={load}><RefreshCw size={17}/> Actualiser</button></div>
+   <div className="platformTop"><div><span className="eyebrow">MONATSHIEBE LOGICIEL</span><h1>Administration de la plateforme</h1><p>Gérez plusieurs établissements depuis une seule plateforme.</p></div><button className="btn light" onClick={load}><RefreshCw size={17}/> Actualiser</button></div>
    {msg&&<div className="notice">{msg}</div>}
    <div className="platformGrid">
     <form className="panel createForm" onSubmit={createSchool}>
