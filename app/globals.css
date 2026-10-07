@@ -17,3 +17,71 @@
 
 .modalBackdrop{position:fixed;inset:0;background:rgba(10,18,28,.55);display:grid;place-items:center;padding:18px;z-index:100}.adminModal,.cardModal{width:min(620px,100%);box-sizing:border-box;max-height:calc(100vh - 36px);overflow:auto}.receipt{background:#fff;border:1px solid #e6e9ee;border-radius:14px;padding:24px}.receipt table{width:100%;border-collapse:collapse;margin:16px 0}.receipt th,.receipt td{padding:9px;border-bottom:1px solid #e8ebef;text-align:left}.studentCardSheet{display:grid;gap:18px;justify-content:center}.studentCardSide{width:85.6mm;height:54mm;box-sizing:border-box;border-radius:4mm;border:1px solid #d9dee5;background:#fff;padding:5mm;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.12)}.cardHeader{display:flex;align-items:center;gap:3mm;border-bottom:1px solid #dfe5eb;padding-bottom:2.5mm}.cardHeader img{width:13mm;height:13mm;object-fit:contain}.cardHeader b{display:block;font-size:10px}.cardHeader small{display:block;font-size:5.5px;margin-top:1mm}.cardTitle{text-align:center;font-weight:900;font-size:10px;letter-spacing:.08em;margin:3mm 0}.cardBody{display:flex;gap:4mm}.studentPhoto{width:23mm;height:29mm;border:1px solid #cfd6de;display:grid;place-items:center;font-size:7px;overflow:hidden;flex:none}.studentPhoto img{width:100%;height:100%;object-fit:cover}.studentIdentity{font-size:7px;line-height:1.45}.studentIdentity>b{display:block;font-size:9px;margin-bottom:2mm}.studentIdentity p{margin:1mm 0}.back{text-align:center;font-size:7px;line-height:1.5}.back .cardRule{border-top:1px solid #dfe5eb;margin:8mm 0 3mm}.cardBottom{display:flex;justify-content:space-between;align-items:end;margin-top:8mm;border-top:1px solid #dfe5eb;padding-top:3mm;font-size:7px}.cardActions{display:flex;gap:8px;margin-top:14px}.cardActions button{flex:1}@media print{body *{visibility:hidden!important}.receipt,.receipt *,.studentCardSheet,.studentCardSheet *{visibility:visible!important}.modalBackdrop{position:absolute!important;inset:0!important;background:#fff!important;padding:0!important}.adminModal,.cardModal{box-shadow:none!important;border:0!important;width:auto!important;max-width:none!important;max-height:none!important;overflow:visible!important}.cardActions{display:none!important}.studentCardSheet{display:grid!important;grid-template-columns:85.6mm 85.6mm!important;gap:10mm!important}.studentCardSide{box-shadow:none!important}.receipt{width:80mm!important;border:0!important;box-shadow:none!important}}
 .schoolPortals{margin-top:18px;text-align:center;color:#657387;font-size:13px}.schoolPortals>b{display:block;margin-bottom:9px;color:#1d2a3d}.schoolPortals>div{display:grid;gap:8px}.schoolPortals a{display:block;padding:10px 12px;border:1px solid #dce5ef;border-radius:10px;color:#1767ad;text-decoration:none;font-weight:750;background:#f8fbff}.schoolPortals a:hover{background:#eef6fd}.portalLinks{text-align:center;margin-top:12px}.portalLinks a{color:#1767ad;font-weight:700;text-decoration:none}
+
+/* Premium student ID card */
+.cardModal{width:min(980px,100%);background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important}
+.studentCardSheet{display:grid;grid-template-columns:repeat(2,85.6mm);gap:10mm;justify-content:center}
+.studentCardSide{position:relative;width:85.6mm;height:54mm;box-sizing:border-box;border:0;border-radius:4mm;overflow:hidden;padding:4.5mm;background:linear-gradient(135deg,#ffffff 0%,#f8fafc 62%,#eef4f8 100%);box-shadow:0 16px 40px rgba(10,25,45,.18);color:#142235}
+.studentCardSide:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(16,59,100,.06),transparent 40%,rgba(212,175,55,.08));pointer-events:none}
+.studentCardSide:after{content:"";position:absolute;right:-15mm;bottom:-18mm;width:45mm;height:45mm;border-radius:50%;border:1mm solid rgba(212,175,55,.16);box-shadow:0 0 0 4mm rgba(212,175,55,.05),0 0 0 8mm rgba(16,59,100,.035);pointer-events:none}
+.studentCardTop,.backBrand{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:3mm}
+.schoolIdentity{display:flex;align-items:center;gap:2.5mm;min-width:0}
+.schoolLogoFrame{width:13mm;height:13mm;border-radius:3mm;background:#fff;border:1px solid rgba(16,59,100,.15);display:grid;place-items:center;overflow:hidden;box-shadow:0 2px 8px rgba(16,59,100,.08);flex:none}
+.schoolLogoFrame img{width:100%;height:100%;object-fit:contain}
+.schoolLogoFrame span{font-weight:950;font-size:10px;color:#103b64}
+.schoolLogoFrame.small{width:9mm;height:9mm;border-radius:2.5mm}
+.schoolIdentityText{min-width:0}
+.schoolIdentityText b{display:block;font-size:9.2px;line-height:1.15;max-width:46mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schoolIdentityText small{display:block;margin-top:1mm;font-size:4.6px;letter-spacing:.12em;color:#6d7b8d;font-weight:800}
+.drcMark{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:.5mm;flex:none}
+.drcMark svg{width:13mm;height:9mm;display:block;border-radius:1.7mm;box-shadow:0 2px 7px rgba(0,0,0,.12)}
+.drcMark span{font-size:4.2px;letter-spacing:.12em;font-weight:950;color:#26384d}
+.cardGoldLine{position:relative;z-index:2;height:.65mm;margin:2.5mm 0 2.2mm;background:linear-gradient(90deg,#d4af37,#f3d879,#d4af37);border-radius:99px}
+.studentCardLabel{position:relative;z-index:2;text-align:center}
+.studentCardLabel span{display:block;font-size:4px;letter-spacing:.16em;color:#718095;font-weight:850}
+.studentCardLabel strong{display:block;margin-top:.7mm;font-size:10.5px;letter-spacing:.12em;color:#103b64}
+.studentCardLabel small{display:block;margin-top:.6mm;font-size:4.8px;color:#7a8797;font-weight:700}
+.studentCardMain{position:relative;z-index:2;display:flex;gap:3.5mm;margin-top:2.5mm}
+.studentPhoto.premium{width:23mm;height:27mm;border:1px solid #cbd5df;border-radius:2.5mm;background:linear-gradient(145deg,#eef3f7,#fff);box-shadow:0 3px 10px rgba(20,40,70,.12);display:grid;place-items:center;overflow:hidden;flex:none}
+.studentPhoto.premium img{width:100%;height:100%;object-fit:cover}
+.studentPhoto.premium div{text-align:center;color:#8290a0}
+.studentPhoto.premium span{display:block;font-size:6px;font-weight:950;letter-spacing:.12em}
+.studentPhoto.premium small{display:block;font-size:4px;margin-top:1mm}
+.studentIdentity.premium{flex:1;min-width:0}
+.studentName{display:block;font-size:10px;line-height:1.1;font-weight:950;color:#142235;margin-bottom:2mm;text-transform:uppercase}
+.studentMetaGrid{display:grid;grid-template-columns:1fr 1fr;gap:1.8mm 3mm}
+.studentMetaGrid div{min-width:0}
+.studentMetaGrid small,.backGrid small{display:block;font-size:3.8px;letter-spacing:.1em;color:#7a8797;font-weight:850}
+.studentMetaGrid b{display:block;font-size:5.8px;line-height:1.15;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#24364a}
+.studentCardFooter{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:3.4mm;display:flex;align-items:end;justify-content:space-between;border-top:1px solid #dfe5eb;padding-top:1.8mm}
+.studentCardFooter small{display:block;font-size:3.5px;color:#7a8797}
+.studentCardFooter b{display:block;font-size:5px;color:#33475c;margin-top:.4mm}
+.studentStatus{font-size:4.1px;font-weight:900;color:#167245;display:flex;align-items:center;gap:1mm}
+.studentStatus span{width:1.8mm;height:1.8mm;background:#23a25a;border-radius:50%;box-shadow:0 0 0 1mm rgba(35,162,90,.08)}
+.cardSerial{font-size:5px;font-weight:900;color:#103b64;letter-spacing:.08em}
+.back{padding:4.5mm}
+.backBrand{justify-content:flex-start}
+.backBrand>div:nth-child(2){min-width:0;flex:1}
+.backBrand>div:nth-child(2) b{display:block;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backBrand>div:nth-child(2) small{display:block;margin-top:.7mm;font-size:4.2px;color:#788697}
+.backBrand .drcMark{margin-left:auto}
+.backTitle{position:relative;z-index:2;text-align:center;color:#103b64;font-size:8px;font-weight:950;letter-spacing:.12em;margin:3mm 0}
+.backGrid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:2.5mm 5mm;padding:0 1mm}
+.backGrid b{display:block;font-size:5.5px;line-height:1.2;margin-top:.6mm;color:#2b3e53}
+.cardNotice{position:relative;z-index:2;margin-top:3.2mm;padding:2.3mm 2.5mm;border-left:1mm solid #d4af37;background:rgba(255,255,255,.72);font-size:5px;line-height:1.45;color:#58697d}
+.backSignatures{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:8mm;display:flex;justify-content:space-between;align-items:end;gap:8mm}
+.backSignatures>div{flex:1}
+.backSignatures span{display:block;font-size:4px;color:#7a8797;margin-bottom:1.5mm}
+.backSignatures i{display:block;height:5mm;border-bottom:1px solid #9ca9b7}
+.backSignatures b{display:block;font-size:6px;color:#103b64;border-bottom:1px solid #9ca9b7;padding-bottom:1.2mm}
+.backFooter{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:3mm;display:flex;justify-content:space-between;font-size:3.7px;letter-spacing:.08em;color:#788697}
+.backFooter b{color:#103b64}
+@media(max-width:900px){
+ .studentCardSheet{grid-template-columns:85.6mm}
+ .cardModal{max-height:calc(100vh - 20px)}
+}
+@media print{
+ .studentCardSheet{display:grid!important;grid-template-columns:85.6mm 85.6mm!important;gap:10mm!important}
+ .studentCardSide{box-shadow:none!important;border:1px solid #d9dee5!important;break-inside:avoid}
+ .cardModal{width:auto!important;background:transparent!important}
+}
