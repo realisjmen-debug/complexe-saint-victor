@@ -79,7 +79,7 @@ function SoftwareLanding(){
 }
 
 function Login({school,email,password,setEmail,setPassword,busy,error,onSubmit}:any){
- return <div className="login"><div className="loginCard">
+ return <div className="login" style={{"--school-primary":school?.primary_color||"#0b3151","--school-secondary":school?.secondary_color||"#176bb3"} as React.CSSProperties}><div className="loginCard">
   <div className="logo big">{school?.logo_url?<img src={school.logo_url} alt=""/>:"ML"}</div>
   <div className="eyebrow">{school?.name||"ÉTABLISSEMENT"}</div>
   <h1>Accès sécurisé</h1>
