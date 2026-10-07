@@ -14,7 +14,7 @@ export default function Home(){
  async function loadSchool(id:string){const [{data},{data:sub}]=await Promise.all([supabase.from("schools").select("*").eq("id",id).single(),supabase.from("school_subscriptions").select("*,subscription_plans(name)").eq("school_id",id).order("created_at",{ascending:false}).limit(1).maybeSingle()]);setSchool(data);setSubscription(sub)}
  async function login(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");const {error}=await supabase.auth.signInWithPassword({email,password});if(error)setError(error.message);setBusy(false)}
  async function logout(){await supabase.auth.signOut()}
- if(loading)return <div className="center"><div className="loader"/><p>Chargement de MUTSHI B ÉCOLE SUITE…</p></div>;
+ if(loading)return <div className="center"><div className="loader"/><p>Chargement de MONATSHIEBE LOGICIEL…</p></div>;
  if(!session)return <Login email={email} password={password} setEmail={setEmail} setPassword={setPassword} busy={busy} error={error} onSubmit={login}/>;
  if(!profile)return <div className="center"><ShieldCheck size={42}/><h2>Compte en attente</h2><p>{error||"Compte authentifié sans profil scolaire actif."}</p><button className="btn" onClick={logout}>Se déconnecter</button></div>;
  const expired=subscription?.ends_at&&new Date(subscription.ends_at).getTime()<Date.now();
