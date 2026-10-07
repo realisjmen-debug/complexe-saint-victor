@@ -7,7 +7,7 @@ import {LogIn,Wallet,GraduationCap,CalendarDays,MessageSquare,LogOut,ArrowLeft,P
 const money=(n:number,currency="FC")=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(n)+" "+(currency==="USD"?"$":"FC");
 
 export default function ParentPortal(){
- const schoolSlug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\\/ecole\\/([^/]+)/)?.[1]||""):"";
+ const schoolSlug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\/ecole\/([^/]+)/)?.[1]||""):"";
  const [code,setCode]=useState(""),[data,setData]=useState<any>(null),[loading,setLoading]=useState(false),[error,setError]=useState(""),[receipt,setReceipt]=useState<any>(null),[schoolPreview,setSchoolPreview]=useState<any>(null);
  useEffect(()=>{if(!schoolSlug)return;(async()=>{const {data:d,error:e}=await supabase.functions.invoke("parent-portal",{body:{action:"branding",school_slug:schoolSlug}});if(!e&&!d?.error&&d?.school)setSchoolPreview(d.school)})()},[schoolSlug]);
  async function lookup(e:React.FormEvent){e.preventDefault();setLoading(true);setError("");setData(null);const {data:d,error:e2}=await supabase.functions.invoke("parent-portal",{body:{code,school_slug:schoolSlug}});if(e2){let detail=e2.message;try{const b=await (e2 as any).context?.json?.();if(b?.error)detail=b.error}catch{}setError(detail||"Impossible de vérifier ce code.");}else if(d?.error)setError(d.error);else setData(d);setLoading(false)}
