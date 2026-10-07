@@ -47,12 +47,9 @@ function SoftwareLanding(){
   <div className="eyebrow">MONATSHIEBE</div>
   <h1>MONATSHIEBE<br/>LOGICIEL</h1>
   <p className="landingLead">La solution professionnelle de gestion scolaire pour établissements, équipes pédagogiques et administration.</p>
-  <div className="landingActions">
-   <a className="btn full" href="/ecole/saint-victor"><School size={18}/> Accéder à mon école</a>
-   <a className="platformAccess" href="/platform/login"><ShieldCheck size={16}/> Administration MONATSHIEBE LOGICIEL</a>
-  </div>
   <div className="landingFeatures"><span>Gestion scolaire</span><span>Finance</span><span>Études</span><span>Présences</span><span>Bulletins</span></div>
-  <small>Chaque établissement dispose de son propre espace sécurisé.</small>
+  <p className="landingLead" style={{fontSize:13,opacity:.75}}>Chaque établissement dispose de son propre lien sécurisé, généré depuis l’administration de la plateforme.</p>
+  <small>MONATSHIEBE LOGICIEL — plateforme de gestion scolaire.</small>
  </div></main>
 }
 
