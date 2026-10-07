@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Complexe Scolaire Saint Victor",
-  description: "Application de gestion scolaire — Complexe Scolaire Saint Victor",
+  title: "MUTSHI B ÉCOLE SUITE",
+  description: "Plateforme de gestion scolaire MUTSHI B ÉCOLE SUITE",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
