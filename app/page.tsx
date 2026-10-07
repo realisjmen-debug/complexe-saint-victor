@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {supabase} from "../lib/supabase";
-import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare} from "lucide-react";
+import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare,CheckCircle,AlertTriangle} from "lucide-react";
 
 type P={id:string;school_id:string;full_name:string|null;role_id:string|null;active:boolean;roles?:{name:string;label:string}|null};
 const money=(n:number,currency="FC")=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(n)+" "+(currency==="USD"?"$":"FC");
