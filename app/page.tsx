@@ -15,7 +15,8 @@ export default function Home(){
  async function login(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");const {error}=await supabase.auth.signInWithPassword({email,password});if(error)setError(error.message);setBusy(false)}
  async function logout(){await supabase.auth.signOut()}
  if(loading)return <div className="center"><div className="loader"/><p>Chargement de MONATSHIEBE LOGICIEL…</p></div>;
- if(!session)return <Login email={email} password={password} setEmail={setEmail} setPassword={setPassword} busy={busy} error={error} onSubmit={login}/>;
+ if(!session&&!requestedSlug)return <SoftwareLanding/>;
+ if(!session)return <Login school={school} email={email} password={password} setEmail={setEmail} setPassword={setPassword} busy={busy} error={error} onSubmit={login}/>;
  if(!profile)return <div className="center"><ShieldCheck size={42}/><h2>Compte en attente</h2><p>{error||"Compte authentifié sans profil scolaire actif."}</p><button className="btn" onClick={logout}>Se déconnecter</button></div>;
  const expired=subscription?.ends_at&&new Date(subscription.ends_at).getTime()<Date.now();
  const suspended=subscription && !["trial","active"].includes(subscription.status);
@@ -40,7 +41,37 @@ export default function Home(){
  return <div className="app"><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<Finance profile={profile} can={can}/>} {page==="staff"&&<Staff profile={profile}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>}</section></main></div>;
 }
 
-function Login({email,password,setEmail,setPassword,busy,error,onSubmit}:any){return <div className="login"><div className="loginCard"><div className="logo big">MB</div><h1>MUTSHI B<br/>ÉCOLE SUITE</h1><p>Plateforme de gestion scolaire</p><form onSubmit={onSubmit}><label>Email<input type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="administration@ecole.cd"/></label><label>Mot de passe<input type="password" required value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••••"/></label>{error&&<div className="error">{error}</div>}<button className="btn full" disabled={busy}>{busy?"Connexion…":"Se connecter"}</button></form><a href="/parent" className="platformAccess">👨‍👩‍👧 Espace parents</a><a href="/platform/login" className="platformAccess">🛡️ Administration de la plateforme</a><small>Accès sécurisé par Supabase Auth</small></div></div>}
+function SoftwareLanding(){
+ return <main className="login"><div className="loginCard softwareLanding">
+  <div className="logo big">ML</div>
+  <div className="eyebrow">MONATSHIEBE</div>
+  <h1>MONATSHIEBE<br/>LOGICIEL</h1>
+  <p className="landingLead">La solution professionnelle de gestion scolaire pour établissements, équipes pédagogiques et administration.</p>
+  <div className="landingActions">
+   <a className="btn full" href="/ecole/saint-victor"><School size={18}/> Accéder à mon école</a>
+   <a className="platformAccess" href="/platform/login"><ShieldCheck size={16}/> Administration MONATSHIEBE LOGICIEL</a>
+  </div>
+  <div className="landingFeatures"><span>Gestion scolaire</span><span>Finance</span><span>Études</span><span>Présences</span><span>Bulletins</span></div>
+  <small>Chaque établissement dispose de son propre espace sécurisé.</small>
+ </div></main>
+}
+
+function Login({school,email,password,setEmail,setPassword,busy,error,onSubmit}:any){
+ return <div className="login"><div className="loginCard">
+  <div className="logo big">{school?.logo_url?<img src={school.logo_url} alt=""/>:"ML"}</div>
+  <div className="eyebrow">MONATSHIEBE LOGICIEL</div>
+  <h1>{school?.name||"Connexion établissement"}</h1>
+  <p>Accès sécurisé à l’espace de gestion de votre établissement.</p>
+  <form onSubmit={onSubmit}>
+   <label>Email<input type="email" required value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="administration@ecole.cd"/></label>
+   <label>Mot de passe<input type="password" required value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="••••••••"/></label>
+   {error&&<div className="error">{error}</div>}
+   <button className="btn full" disabled={busy}>{busy?"Connexion…":"Se connecter"}</button>
+  </form>
+  <a href="/" className="platformAccess">← Retour à MONATSHIEBE LOGICIEL</a>
+  <small>Les portails parents et l’administration de la plateforme disposent de leurs adresses sécurisées séparées.</small>
+ </div></div>
+}
 
 function Stat({title,value,icon}:any){return <div className="stat"><div className="icon">{icon}</div><small>{title}</small><b>{value}</b></div>}
 
