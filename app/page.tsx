@@ -48,18 +48,18 @@ export default function Home(){
  const can=(...r:string[])=>r.includes(role);
  const nav:any[]=[
   ["dashboard","Tableau de bord",LayoutDashboard,true],
-  ["students","Élèves",Users,can("promoteur","directeur","administrateur","secretaire")],
-  ["parents","Parents",HeartHandshake,can("promoteur","directeur","administrateur","secretaire")],
-  ["enrollments","Inscriptions",ClipboardList,can("promoteur","directeur","administrateur","etudes","secretaire")],
-  ["studies","Études",GraduationCap,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant")],
-  ["attendance","Présences",CalendarCheck,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant","secretaire")],
-  ["schedule","Emploi du temps",CalendarCheck,can("promoteur","directeur","administrateur","etudes","enseignant","surveillant","secretaire")],
-  ["grades","Notes & évaluations",BarChart3,can("etudes","enseignant")],
-  ["reportcards","Bulletins",FileText,can("promoteur","directeur","administrateur","etudes","enseignant","secretaire")],
+  ["students","Élèves",Users,can("promoteur","directeur","administrateur","secretaire","discipline")],
+  ["parents","Parents",HeartHandshake,can("promoteur","directeur","administrateur","secretaire","discipline")],
+  ["enrollments","Inscriptions",ClipboardList,can("promoteur","directeur","secretaire")],
+  ["studies","Études",GraduationCap,can("promoteur","directeur","etudes")],
+  ["attendance","Présences",CalendarCheck,can("promoteur","directeur","discipline")],
+  ["schedule","Emploi du temps",CalendarCheck,can("promoteur","directeur","etudes","secretaire","discipline")],
+  ["grades","Notes & évaluations",BarChart3,can("etudes")],
+  ["reportcards","Bulletins",FileText,can("promoteur","directeur","etudes","secretaire")],
   ["finance","Finances",Wallet,can("promoteur","directeur","finance","comptable")],
   ["staff","Personnel",UserCog,can("promoteur","directeur","administrateur")],
-  ["announcements","Communications",MessageSquare,can("promoteur","directeur","administrateur","secretaire")],
-  ["settings","Paramètres",Settings,can("promoteur","administrateur")]
+  ["announcements","Communications",MessageSquare,can("promoteur","directeur","etudes","secretaire")],
+  ["settings","Paramètres",Settings,can("promoteur")]
  ];
  return <div className="app"><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<><Finance profile={profile} can={can}/><FeeTracking profile={profile}/><FeeInstallmentManager profile={profile} can={can}/></>} {page==="staff"&&<Staff profile={profile}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>}</section></main></div>;
 }
