@@ -15,7 +15,13 @@ export default function Home(){
   const {data:ctx,error:e}=await supabase.rpc("get_current_school_context");
   const p=ctx?.[0]||null;
   if(e){setProfile(null);setError(e.message);setLoading(false);return}
-  if(!p){setProfile(null);setError("Votre compte est authentifié, mais aucun accès à un établissement ne lui est encore attribué. Le Super Administrateur doit d'abord créer l'école puis vous affecter un rôle.");setLoading(false);return}
+  if(!p){
+   if(!slug){
+    const {data:pa}=await supabase.from("platform_admins").select("user_id,active").eq("user_id",uid).eq("active",true).maybeSingle();
+    if(pa?.active){window.location.href="/platform";return}
+   }
+   setProfile(null);setError("Votre compte est authentifié, mais aucun accès à un établissement ne lui est encore attribué. Le Super Administrateur doit d'abord créer l'école puis vous affecter un rôle.");setLoading(false);return
+  }
   const normalized:any={id:p.id,school_id:p.school_id,full_name:p.full_name,role_id:p.role_id,active:p.active,roles:p.role_name?{name:p.role_name,label:p.role_label}:null};
   if(slug){
     const {data:target,error:te}=await supabase.from("schools").select("*").eq("slug",slug).maybeSingle();
