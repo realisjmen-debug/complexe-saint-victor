@@ -51,8 +51,12 @@ export default function PlatformPage(){
    e.preventDefault();if(!adminSchool)return;
    setBusy(true);setMsg("");
    const {data,error}=await supabase.functions.invoke("create-school-admin",{body:{school_id:adminSchool.id,...admin}});
-   if(error){setMsg(error.message||"Impossible de créer l'administrateur.");setBusy(false);return}
-   if(data?.error){setMsg(data.error);setBusy(false);return}
+   if(error){
+      let detail=error.message||"Impossible de créer l'administrateur.";
+      try{const ctx=(error as any).context;if(ctx?.json){const body=await ctx.json();if(body?.error)detail=body.error+(body?.stage?" — étape: "+body.stage:"");}else if(ctx?.text){const raw=await ctx.text();try{const body=JSON.parse(raw);if(body?.error)detail=body.error+(body?.stage?" — étape: "+body.stage:"")}catch{}}}catch{}
+      setMsg(detail);setBusy(false);return
+   }
+   if(data?.error){setMsg(data.error+(data?.stage?" — étape: "+data.stage:""));setBusy(false);return}
    setMsg("Administrateur créé pour "+adminSchool.name+". Il peut maintenant se connecter avec son email et le mot de passe défini.");
    setAdmin({full_name:"",email:"",phone:"",password:""});setAdminSchool(null);setBusy(false);
  }
@@ -76,7 +80,7 @@ export default function PlatformPage(){
       <button className="btn full" disabled={busy}><Plus size={17}/>{busy?"Création…":"Créer l'école"}</button>
     </form>
     <div className="panel"><div className="sectionTitle"><Building2/><div><h3>Écoles enregistrées</h3><p>{schools.length} établissement(s)</p></div></div>
-      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/ecole/"+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
+      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><small className="schoolLink">Lien : /ecole/{s.slug}</small><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/ecole/"+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
     </div>
    </div>
    {adminSchool&&<div className="modalBackdrop" onClick={()=>!busy&&setAdminSchool(null)}>
