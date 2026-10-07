@@ -12,13 +12,13 @@ const callerRole=(profile.roles as any)?.name;if(!["promoteur","directeur","admi
 const body=await req.json();const email=String(body.email||"").trim().toLowerCase(),fullName=String(body.full_name||"").trim(),phone=String(body.phone||"").trim(),password=String(body.password||""),roleName=String(body.role_name||"").trim().toLowerCase();
 const allowed=["administrateur","directeur","comptable","enseignant","etudes","finance","secretaire","surveillant","discipline"];if(!email||!fullName||password.length<8||!allowed.includes(roleName))return json({error:"Nom, email, rôle autorisé et mot de passe d'au moins 8 caractères sont obligatoires."},400);
 const {data:role,error:re}=await db.from("roles").select("id,name,label").eq("name",roleName).maybeSingle();if(re||!role)return json({error:"Rôle introuvable."},400);
-const {data:created,error:ce}=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{full_name:fullName,school_id:profile.school_id}});if(ce||!created.user)return json({error:"Création du compte impossible: "+(ce?.message||"réponse vide")},400);
-const {error:ie}=await db.rpc("create_school_profile",{p_user_id:created.user.id,p_school_id:profile.school_id,p_role_id:role.id,p_full_name:fullName,p_phone:phone});if(ie){await db.auth.admin.deleteUser(created.user.id);return json({error:"Le compte a été créé mais son accès à l'école a échoué: "+ie.message},500);}
 const uniqueRoles=["administrateur","directeur","secretaire","finance","comptable","etudes","discipline","surveillant"];
 if(uniqueRoles.includes(roleName)){
- const {data:existing}=await db.from("profiles").select("id").eq("school_id",profile.school_id).eq("role_id",role.id).eq("active",true).neq("id",created.user.id).limit(1);
- if(existing?.length){await db.from("profiles").delete().eq("id",created.user.id);await db.auth.admin.deleteUser(created.user.id);return json({error:"Ce rôle est déjà attribué à une personne active dans cette école."},409);}
+ const {data:existing}=await db.from("profiles").select("id,full_name").eq("school_id",profile.school_id).eq("role_id",role.id).eq("active",true).limit(1);
+ if(existing?.length)return json({error:"Ce rôle est déjà attribué à une personne active dans cette école. Désactivez ou remplacez d'abord le titulaire actuel."},409);
 }
+const {data:created,error:ce}=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{full_name:fullName,school_id:profile.school_id}});if(ce||!created.user)return json({error:"Création du compte impossible: "+(ce?.message||"réponse vide")},400);
+const {error:ie}=await db.rpc("create_school_profile",{p_user_id:created.user.id,p_school_id:profile.school_id,p_role_id:role.id,p_full_name:fullName,p_phone:phone});if(ie){await db.auth.admin.deleteUser(created.user.id);return json({error:"Le compte a été créé mais son accès à l'école a échoué: "+ie.message},500);}
 if(roleName==="enseignant"){
  const accessCode="T-"+crypto.randomUUID().replaceAll("-","").slice(0,10).toUpperCase();
  const {data:teacher}=await db.from("teachers").select("id").eq("school_id",profile.school_id).eq("email",email).maybeSingle();
