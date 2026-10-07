@@ -10,8 +10,28 @@ const today=()=>new Date().toISOString().slice(0,10);
 export default function Home(){
  const [session,setSession]=useState<any>(null),[profile,setProfile]=useState<P|null>(null),[school,setSchool]=useState<any>(null),[subscription,setSubscription]=useState<any>(null),[requestedSlug,setRequestedSlug]=useState(""),[page,setPage]=useState("dashboard"),[loading,setLoading]=useState(true),[mobile,setMobile]=useState(false),[error,setError]=useState(""),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[busy,setBusy]=useState(false);
  useEffect(()=>{if(typeof window!=="undefined"&&window.location.hash&&(window.location.hash.includes("type=recovery")||window.location.hash.includes("access_token="))){window.location.replace("/platform/reset-password"+window.location.hash);return}const slug=new URLSearchParams(window.location.search).get("school")||"";setRequestedSlug(slug);if(slug)supabase.from("schools").select("*").eq("slug",slug).maybeSingle().then(({data})=>{if(data)setSchool(data)});supabase.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)loadUser(data.session.user.id,slug);else setLoading(false)});const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>{setSession(s);const currentSlug=typeof window!=="undefined"?new URLSearchParams(window.location.search).get("school")||"":"";if(s)loadUser(s.user.id,currentSlug);else{setProfile(null);setLoading(false)}});return()=>subscription.unsubscribe()},[]);
- async function loadUser(uid:string,slug=""){setLoading(true);setError("");const {data:p,error:e}=await supabase.from("profiles").select("*,roles(name,label)").eq("id",uid).maybeSingle();if(e)setError(e.message);if(p?.active){if(slug){const {data:target,error:te}=await supabase.from("schools").select("*").eq("slug",slug).maybeSingle();if(te||!target){setProfile(null);setError("Établissement introuvable.");setLoading(false);return}if(target.id!==p.school_id){setProfile(null);setError("Ce compte n'est pas autorisé à accéder à cet établissement.");setLoading(false);return}setSchool(target)}setProfile(p);await loadSchool(p.school_id)}else{setProfile(null);setError("Votre compte est authentifié, mais aucun accès à un établissement ne lui est encore attribué. Le Super Administrateur doit d'abord créer l'école puis vous affecter un rôle.");}setLoading(false)}
- async function loadSchool(id:string){const [{data},{data:sub}]=await Promise.all([supabase.from("schools").select("*").eq("id",id).single(),supabase.from("school_subscriptions").select("*,subscription_plans(name)").eq("school_id",id).order("created_at",{ascending:false}).limit(1).maybeSingle()]);setSchool(data);setSubscription(sub)}
+ async function loadUser(uid:string,slug=""){
+  setLoading(true);setError("");
+  const {data:p,error:e}=await supabase.from("profiles").select("id,school_id,full_name,role_id,active").eq("id",uid).maybeSingle();
+  if(e){setProfile(null);setError(e.message);setLoading(false);return}
+  if(!p?.active){setProfile(null);setError("Votre compte est authentifié, mais aucun accès à un établissement ne lui est encore attribué. Le Super Administrateur doit d'abord créer l'école puis vous affecter un rôle.");setLoading(false);return}
+  let roleData:any=null;
+  if(p.role_id){
+    const {data:r,error:re}=await supabase.from("roles").select("name,label").eq("id",p.role_id).maybeSingle();
+    if(re){setProfile(null);setError(re.message);setLoading(false);return}
+    roleData=r;
+  }
+  const normalized:any={...p,roles:roleData};
+  if(slug){
+    const {data:target,error:te}=await supabase.from("schools").select("*").eq("slug",slug).maybeSingle();
+    if(te||!target){setProfile(null);setError("Établissement introuvable.");setLoading(false);return}
+    if(target.id!==p.school_id){setProfile(null);setError("Ce compte n'est pas autorisé à accéder à cet établissement.");setLoading(false);return}
+    setSchool(target)
+  }
+  setProfile(normalized);
+  await loadSchool(p.school_id);
+  setLoading(false)
+ }\n async function loadSchool(id:string){const [{data},{data:sub}]=await Promise.all([supabase.from("schools").select("*").eq("id",id).single(),supabase.from("school_subscriptions").select("*,subscription_plans(name)").eq("school_id",id).order("created_at",{ascending:false}).limit(1).maybeSingle()]);setSchool(data);setSubscription(sub)}
  async function login(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");const {error}=await supabase.auth.signInWithPassword({email,password});if(error)setError(error.message);setBusy(false)}
  async function logout(){await supabase.auth.signOut()}
  if(loading)return <div className="center"><div className="loader"/><p>Chargement de MONATSHIEBE LOGICIEL…</p></div>;
