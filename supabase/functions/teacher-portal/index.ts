@@ -6,12 +6,17 @@ Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
  try{
   const body=await req.json(),code=String(body.code||"").trim().toUpperCase(),action=String(body.action||"login");
-  if(!/^T-[A-Z0-9]{8,20}$/.test(code))return json({error:"Code enseignant invalide."},400);
   const url=Deno.env.get("SUPABASE_URL")||"",service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
   if(!url||!service)return json({error:"Configuration serveur Supabase incomplète."},500);
   const db=createClient(url,service),slug=String(body.school_slug||"").trim().toLowerCase();
   const {data:school}=await db.from("schools").select("id,name,slug,logo_url,logo_path,primary_color,secondary_color").eq("slug",slug).eq("status","active").maybeSingle();
   if(!school)return json({error:"Établissement introuvable ou suspendu."},404);
+  if(action==="branding"){
+   let logoUrl=school.logo_url||null;
+   if(school.logo_path){const {data:x}=await db.storage.from("school-assets").createSignedUrl(school.logo_path,3600);logoUrl=x?.signedUrl||logoUrl}
+   return json({success:true,school:{name:school.name,slug:school.slug,logo_url:logoUrl,primary_color:school.primary_color,secondary_color:school.secondary_color}});
+  }
+  if(!/^T-[A-Z0-9]{8,20}$/.test(code))return json({error:"Code enseignant invalide."},400);
   const {data:teacher,error:te}=await db.from("teachers").select("id,school_id,matricule,last_name,first_name,post_name,email,phone,photo_url,access_code").eq("school_id",school.id).eq("access_code",code).eq("active",true).maybeSingle();
   if(te)return json({error:"Lecture impossible: "+te.message},500);
   if(!teacher)return json({error:"Code enseignant invalide ou désactivé."},404);
