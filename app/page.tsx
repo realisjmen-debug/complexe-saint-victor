@@ -346,21 +346,140 @@ function Discipline({profile,can}:any){
 
 function TeacherAssignments({profile,can}:any){
  const editable=can("etudes");
- const [rows,setRows]=useState<any[]>([]),[teachers,setTeachers]=useState<any[]>([]),[classes,setClasses]=useState<any[]>([]),[subjects,setSubjects]=useState<any[]>([]),[years,setYears]=useState<any[]>([]),[show,setShow]=useState(false),[msg,setMsg]=useState("");
+ const [rows,setRows]=useState<any[]>([]);
+ const [teachers,setTeachers]=useState<any[]>([]);
+ const [classes,setClasses]=useState<any[]>([]);
+ const [subjects,setSubjects]=useState<any[]>([]);
+ const [years,setYears]=useState<any[]>([]);
+ const [show,setShow]=useState(false);
+ const [msg,setMsg]=useState("");
  const [form,setForm]=useState<any>({teacher_id:"",class_id:"",subject_id:"",academic_year_id:""});
- async function load(){const [a,t,c,s,y]=await Promise.all([
-  supabase.from("teacher_subject_assignments").select("id,teacher_id,class_id,subject_id,academic_year_id,teachers(last_name,first_name,matricule,access_code),classes(name),subjects(name),academic_years(name)").eq("school_id",profile.school_id).eq("active",true),
-  supabase.from("teachers").select("id,last_name,first_name,matricule,access_code").eq("school_id",profile.school_id).eq("active",true).order("last_name"),
-  supabase.from("classes").select("id,name").eq("school_id",profile.school_id).order("name"),
-  supabase.from("subjects").select("id,name").eq("school_id",profile.school_id).order("name"),
-  supabase.from("academic_years").select("id,name,is_current").eq("school_id",profile.school_id).order("start_date",{ascending:false})
- ]);setRows(a.data||[]);setTeachers(t.data||[]);setClasses(c.data||[]);setSubjects(s.data||[]);setYears(y.data||[]);if(!form.academic_year_id&&y.data?.[0])setForm((f:any)=>({...f,academic_year_id:y.data.find((x:any)=>x.is_current)?.id||y.data[0].id}))}
+
+ async function load(){
+  const [a,t,c,s,y]=await Promise.all([
+   supabase.from("teacher_subject_assignments").select("id,teacher_id,class_id,subject_id,academic_year_id,teachers(last_name,first_name,matricule,access_code),classes(name),subjects(name),academic_years(name)").eq("school_id",profile.school_id).eq("active",true),
+   supabase.from("teachers").select("id,last_name,first_name,matricule,access_code").eq("school_id",profile.school_id).eq("active",true).order("last_name"),
+   supabase.from("classes").select("id,name").eq("school_id",profile.school_id).order("name"),
+   supabase.from("subjects").select("id,name").eq("school_id",profile.school_id).order("name"),
+   supabase.from("academic_years").select("id,name,is_current").eq("school_id",profile.school_id).order("start_date",{ascending:false})
+  ]);
+  setRows(a.data||[]);
+  setTeachers(t.data||[]);
+  setClasses(c.data||[]);
+  setSubjects(s.data||[]);
+  setYears(y.data||[]);
+  if(!form.academic_year_id&&y.data?.[0]){
+   setForm((f:any)=>({...f,academic_year_id:y.data.find((x:any)=>x.is_current)?.id||y.data[0].id}));
+  }
+ }
+
  useEffect(()=>{load()},[profile.school_id]);
- async function save(e:React.FormEvent){e.preventDefault();if(!editable)return;setMsg("");if(!form.teacher_id||!form.class_id||!form.subject_id){setMsg("Choisissez l’enseignant, la classe et la matière.");return}const {data:exists}=await supabase.from("teacher_subject_assignments").select("id").eq("school_id",profile.school_id).eq("teacher_id",form.teacher_id).eq("class_id",form.class_id).eq("subject_id",form.subject_id).eq("academic_year_id",form.academic_year_id).eq("active",true).maybeSingle();if(exists){setMsg("Cette affectation existe déjà.");return}const {error}=await supabase.from("teacher_subject_assignments").insert({school_id:profile.school_id,teacher_id:form.teacher_id,class_id:form.class_id,subject_id:form.subject_id,academic_year_id:form.academic_year_id||null,active:true});if(error)setMsg(error.message);else{setMsg("Affectation enregistrée.");setShow(false);setForm({teacher_id:"",class_id:"",subject_id:"",academic_year_id:form.academic_year_id});load()}}
- async function remove(id:string){if(!editable)return;if(!confirm("Retirer cette affectation ?"))return;const {error}=await supabase.from("teacher_subject_assignments").update({active:false}).eq("id",id).eq("school_id",profile.school_id);if(error)setMsg(error.message);else load()}
- return <><div className="head"><div><h1>Affectations enseignants</h1><p>Le Chargé des études détermine précisément quelles classes et matières chaque enseignant peut utiliser dans son portail.</p></div>{editable&&<button className="btn" onClick={()=>setShow(!show)}><Plus size={17}/> {show?"Fermer":"Nouvelle affectation"}</button>}</div>
- {show&&editable&&<form className="panel formGrid" onSubmit={save}><label>Enseignant<select required value={form.teacher_id} onChange={e=>setForm({...form,teacher_id:e.target.value})}><option value="">Choisir…</option>{teachers.map(x=><option key={x.id} value={x.id}>{x.last_name} {x.first_name} — {x.matricule}</option>)}</select></label><label>Classe<select required value={form.class_id} onChange={e=>setForm({...form,class_id:e.target.value})}><option value="">Choisir…</option>{classes.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Matière<select required value={form.subject_id} onChange={e=>setForm({...form,subject_id:e.target.value})}><option value="">Choisir…</option>{subjects.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Année scolaire<select value={form.academic_year_id} onChange={e=>setForm({...form,academic_year_id:e.target.value})}><option value="">Aucune / toutes</option>{years.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label>{msg&&<div className="error">{msg}</div>}<button className="btn"><Save size={16}/> Enregistrer</button></form>}
- <div className="panel tableWrap"><table><thead><tr><th>Enseignant</th><th>Classe</th><th>Matière</th><th>Année</th><th>Code portail</th>{editable&&<th>Action</th>}</tr></thead><tbody>{rows.map(x=><tr key={x.id}><td>{x.teachers?.last_name} {x.teachers?.first_name}</td><td>{x.classes?.name}</td><td>{x.subjects?.name}</td><td>{x.academic_years?.name||"—"}</td><td><code>{x.teachers?.access_code||"—"}</code></td>{editable&&<td><button className="btn light" onClick={()=>remove(x.id)}>Retirer</button></td>}</tr>)}{!rows.length&&<tr><td colSpan={6} className="empty">Aucune affectation active.</td></tr>}</tbody></table></div></>
+
+ async function save(e:React.FormEvent){
+  e.preventDefault();
+  if(!editable)return;
+  setMsg("");
+  if(!form.teacher_id||!form.class_id||!form.subject_id){
+   setMsg("Choisissez l’enseignant, la classe et la matière.");
+   return;
+  }
+  const {data:exists}=await supabase.from("teacher_subject_assignments")
+   .select("id")
+   .eq("school_id",profile.school_id)
+   .eq("teacher_id",form.teacher_id)
+   .eq("class_id",form.class_id)
+   .eq("subject_id",form.subject_id)
+   .eq("academic_year_id",form.academic_year_id)
+   .eq("active",true)
+   .maybeSingle();
+  if(exists){
+   setMsg("Cette affectation existe déjà.");
+   return;
+  }
+  const {error}=await supabase.from("teacher_subject_assignments").insert({
+   school_id:profile.school_id,
+   teacher_id:form.teacher_id,
+   class_id:form.class_id,
+   subject_id:form.subject_id,
+   academic_year_id:form.academic_year_id||null,
+   active:true
+  });
+  if(error){
+   setMsg(error.message);
+  }else{
+   setMsg("Affectation enregistrée.");
+   setShow(false);
+   setForm({teacher_id:"",class_id:"",subject_id:"",academic_year_id:form.academic_year_id});
+   load();
+  }
+ }
+
+ async function remove(id:string){
+  if(!editable)return;
+  if(!confirm("Retirer cette affectation ?"))return;
+  const {error}=await supabase.from("teacher_subject_assignments")
+   .update({active:false})
+   .eq("id",id)
+   .eq("school_id",profile.school_id);
+  if(error)setMsg(error.message);
+  else load();
+ }
+
+ return <>
+  <div className="head">
+   <div>
+    <h1>Affectations enseignants</h1>
+    <p>Le Chargé des études détermine précisément quelles classes et matières chaque enseignant peut utiliser dans son portail.</p>
+   </div>
+   {editable&&<button className="btn" onClick={()=>setShow(!show)}><Plus size={17}/> {show?"Fermer":"Nouvelle affectation"}</button>}
+  </div>
+
+  {show&&editable&&<form className="panel formGrid" onSubmit={save}>
+   <label>Enseignant
+    <select required value={form.teacher_id} onChange={e=>setForm({...form,teacher_id:e.target.value})}>
+     <option value="">Choisir…</option>
+     {teachers.map(x=><option key={x.id} value={x.id}>{x.last_name} {x.first_name} — {x.matricule}</option>)}
+    </select>
+   </label>
+   <label>Classe
+    <select required value={form.class_id} onChange={e=>setForm({...form,class_id:e.target.value})}>
+     <option value="">Choisir…</option>
+     {classes.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}
+    </select>
+   </label>
+   <label>Matière
+    <select required value={form.subject_id} onChange={e=>setForm({...form,subject_id:e.target.value})}>
+     <option value="">Choisir…</option>
+     {subjects.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}
+    </select>
+   </label>
+   <label>Année scolaire
+    <select value={form.academic_year_id} onChange={e=>setForm({...form,academic_year_id:e.target.value})}>
+     <option value="">Aucune / toutes</option>
+     {years.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}
+    </select>
+   </label>
+   {msg&&<div className="error">{msg}</div>}
+   <button className="btn"><Save size={16}/> Enregistrer</button>
+  </form>}
+
+  <div className="panel tableWrap">
+   <table>
+    <thead><tr><th>Enseignant</th><th>Classe</th><th>Matière</th><th>Année</th><th>Code portail</th>{editable&&<th>Action</th>}</tr></thead>
+    <tbody>
+     {rows.map(x=><tr key={x.id}>
+      <td>{x.teachers?.last_name} {x.teachers?.first_name}</td>
+      <td>{x.classes?.name}</td>
+      <td>{x.subjects?.name}</td>
+      <td>{x.academic_years?.name||"—"}</td>
+      <td><code>{x.teachers?.access_code||"—"}</code></td>
+      {editable&&<td><button className="btn light" onClick={()=>remove(x.id)}>Retirer</button></td>}
+     </tr>)}
+     {!rows.length&&<tr><td colSpan={6} className="empty">Aucune affectation active.</td></tr>}
+    </tbody>
+   </table>
+  </div>
+ </>
 }
 
 function StudentFinance({profile,can}:any){
