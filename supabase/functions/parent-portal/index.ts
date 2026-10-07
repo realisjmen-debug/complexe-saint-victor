@@ -26,7 +26,7 @@ Deno.serve(async(req)=>{
    db.from("payments").select("id,receipt_number,amount,currency,method,status,paid_at,note,student_fee_id,payment_items(id,description,amount,currency,fee_id,installment_id)").eq("student_id",s.id).order("paid_at",{ascending:false}).limit(100),
    db.from("student_fees").select("id,amount_due,discount,fees(name,frequency,currency),fee_installments(name,installment_number,due_date,amount,currency)").eq("student_id",s.id).order("id",{ascending:false}).limit(100),
    db.from("student_parents").select("relationship,is_primary,parents(first_name,last_name,phone,email)").eq("student_id",s.id).order("is_primary",{ascending:false}),
-   db.from("announcements").select("id,title,content,created_at,audience").eq("school_id",s.school_id).eq("published",true).order("created_at",{ascending:false}).limit(20),
+   db.from("announcements").select("id,title,content,created_at,audience").eq("school_id",s.school_id).eq("published",true).in("audience",["parents","all"]).order("created_at",{ascending:false}).limit(20),
    db.from("attendance").select("attendance_date,status,note").eq("student_id",s.id).eq("school_id",s.school_id).order("attendance_date",{ascending:false}).limit(60),
    db.from("grades").select("score,comment,assessments(title,assessment_date,max_score,term,assessment_type,subjects(name))").eq("student_id",s.id).order("graded_at",{ascending:false}).limit(100),
    db.from("report_cards").select("id,term,status,average,rank,appreciation,academic_years(name),report_card_results(subject_id,coefficient,average,rank,teacher_comment,subjects(name))").eq("student_id",s.id).eq("school_id",s.school_id).eq("status","published").order("created_at",{ascending:false}).limit(10)
