@@ -13,7 +13,8 @@ Deno.serve(async(req)=>{
   const db=createClient(url,service);
   const {data:school,error:se}=await db.from("schools").select("id,name,slug,logo_url,logo_path,primary_color,secondary_color,city,phone,address").eq("slug",slug).eq("status","active").maybeSingle();
   if(se)return json({error:"Lecture de l'établissement impossible: "+se.message},500);
-  if(!school)return json({error:"Établissement introuvable ou suspendu."},404);\n  if(action==="branding"){let logoUrl=school.logo_url||null;if(school.logo_path){const {data:x}=await db.storage.from("school-assets").createSignedUrl(school.logo_path,3600);logoUrl=x?.signedUrl||logoUrl}return json({success:true,school:{name:school.name,slug:school.slug,logo_url:logoUrl,primary_color:school.primary_color,secondary_color:school.secondary_color}});}
+  if(!school)return json({error:"Établissement introuvable ou suspendu."},404);
+  if(action==="branding"){let logoUrl=school.logo_url||null;if(school.logo_path){const {data:x}=await db.storage.from("school-assets").createSignedUrl(school.logo_path,3600);logoUrl=x?.signedUrl||logoUrl}return json({success:true,school:{name:school.name,slug:school.slug,logo_url:logoUrl,primary_color:school.primary_color,secondary_color:school.secondary_color}});}
   const {data:s,error:e}=await db.from("students").select("id,school_id,matricule,last_name,first_name,post_name,sex,date_of_birth,photo_url,photo_path,parent_access_code").eq("school_id",school.id).eq("parent_access_code",code).eq("active",true).maybeSingle();
   if(e)return json({error:"Lecture impossible: "+e.message},500);
   if(!s)return json({error:"Code invalide pour cet établissement."},404);
