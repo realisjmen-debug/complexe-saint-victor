@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {schoolSupabase as supabase} from "../lib/supabase";
-import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare,CheckCircle,AlertTriangle} from "lucide-react";
+import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare,CheckCircle,AlertTriangle,CreditCard as CreditCardIcon} from "lucide-react";
 
 type P={id:string;school_id:string;full_name:string|null;role_id:string|null;active:boolean;roles?:{name:string;label:string}|null};
 const money=(n:number,currency="FC")=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(n)+" "+(currency==="USD"?"$":"FC");
@@ -81,7 +81,7 @@ function SoftwareLanding(){
 
 function Login({school,email,password,setEmail,setPassword,busy,error,onSubmit}:any){
  const [branding,setBranding]=useState<any>(school||null);
- useEffect(()=>{const slug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\/ecole\/([^/]+)/)?.[1]||""):"";if(!slug)return;(async()=>{const {data,error}=await schoolSupabase.functions.invoke("parent-portal",{body:{action:"branding",school_slug:slug}});if(!error&&!data?.error&&data?.school)setBranding(data.school)})()},[school]);
+ useEffect(()=>{const slug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\/ecole\/([^/]+)/)?.[1]||""):"";if(!slug)return;(async()=>{const {data,error}=await supabase.functions.invoke("parent-portal",{body:{action:"branding",school_slug:slug}});if(!error&&!data?.error&&data?.school)setBranding(data.school)})()},[school]);
  const viewSchool=branding||school;
  return <div className="login" style={{"--school-primary":viewSchool?.primary_color||"#0b3151","--school-secondary":viewSchool?.secondary_color||"#176bb3"} as React.CSSProperties}><div className="loginCard">
   <div className="logo big">{viewSchool?.logo_url?<img src={viewSchool.logo_url} alt=""/>:"ML"}</div>
@@ -128,8 +128,9 @@ function Dashboard({profile,school,role}:any){
  })()},[profile.school_id]);
 
  const financialRoles=["promoteur","directeur","finance","comptable"].includes(role);
+
  return (
-  <>
+  <div>
    <div className="head">
     <div><h1>Tableau de bord</h1><p>{school?.name} • {year}</p></div>
    </div>
@@ -137,12 +138,14 @@ function Dashboard({profile,school,role}:any){
     <Stat title="Élèves" value={c.students} icon={<Users/>}/>
     <Stat title="Enseignants" value={c.teachers} icon={<UserCog/>}/>
     <Stat title="Classes" value={c.classes} icon={<BookOpen/>}/>
-    {financialRoles && <>
-     <Stat title="Encaissements FC" value={money(c.fcIncome,"FC")} icon={<Wallet/>}/>
-     <Stat title="Encaissements USD" value={money(c.usdIncome,"USD")} icon={<Wallet/>}/>
-    </>}
+    {financialRoles ? (
+     <>
+      <Stat title="Encaissements FC" value={money(c.fcIncome,"FC")} icon={<Wallet/>}/>
+      <Stat title="Encaissements USD" value={money(c.usdIncome,"USD")} icon={<Wallet/>}/>
+     </>
+    ) : null}
    </div>
-   {financialRoles && (
+   {financialRoles ? (
     <div className="twoCols">
      <div className="panel">
       <h3>Situation financière</h3>
@@ -161,8 +164,8 @@ function Dashboard({profile,school,role}:any){
       <span className="badge">Compte actif</span>
      </div>
     </div>
-   )}
-  </>
+   ) : null}
+  </div>
  );
 }
 
