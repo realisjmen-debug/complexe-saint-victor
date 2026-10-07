@@ -80,7 +80,7 @@ function SoftwareLanding(){
 
 function Login({school,email,password,setEmail,setPassword,busy,error,onSubmit}:any){
  const [branding,setBranding]=useState<any>(school||null);
- useEffect(()=>{const slug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\\/ecole\\/([^/]+)/)?.[1]||""):"";if(!slug)return;(async()=>{const {data,error}=await schoolSupabase.functions.invoke("parent-portal",{body:{action:"branding",school_slug:slug}});if(!error&&!data?.error&&data?.school)setBranding(data.school)})()},[school]);
+ useEffect(()=>{const slug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\/ecole\/([^/]+)/)?.[1]||""):"";if(!slug)return;(async()=>{const {data,error}=await schoolSupabase.functions.invoke("parent-portal",{body:{action:"branding",school_slug:slug}});if(!error&&!data?.error&&data?.school)setBranding(data.school)})()},[school]);
  const viewSchool=branding||school;
  return <div className="login" style={{"--school-primary":viewSchool?.primary_color||"#0b3151","--school-secondary":viewSchool?.secondary_color||"#176bb3"} as React.CSSProperties}><div className="loginCard">
   <div className="logo big">{viewSchool?.logo_url?<img src={viewSchool.logo_url} alt=""/>:"ML"}</div>
