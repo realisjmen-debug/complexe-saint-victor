@@ -6,3 +6,11 @@
 .platformAccess{display:block;text-align:center;margin:15px 0 3px;color:#1769a8;text-decoration:none;font-weight:800;font-size:13px}.platformAccess:hover{text-decoration:underline}.resetButton{border:0;background:none;color:#1769a8;font-weight:700;font-size:12px;cursor:pointer;padding:2px}.resetButton:hover{text-decoration:underline}
 
 .tabs{display:flex;gap:8px;margin:0 0 14px}.tab{border:1px solid #dbe3ec;background:#fff;border-radius:10px;padding:9px 14px;font-weight:750;color:#526276}.tab.active{background:#176bb3;color:#fff;border-color:#176bb3}.financeSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.financeSummary div{padding:14px;border:1px solid #e8edf2;border-radius:12px}.financeSummary small,.financeSummary b{display:block}.financeSummary small{color:#738095}.financeSummary b{margin-top:6px}.notice{padding:11px 13px;border-radius:10px;background:#edf7ff;color:#245b80;font-size:13px}.formGrid select{padding:11px 12px;border:1px solid #d8e0e9;border-radius:10px;background:#fff}.brand .logo img{width:100%;height:100%;object-fit:contain;border-radius:10px}@media(max-width:600px){.financeSummary{grid-template-columns:1fr}.tabs{overflow:auto}.tab{white-space:nowrap}}
+/* MONATSHIEBE LOGICIEL landing */
+.softwareLanding .eyebrow{letter-spacing:.18em;font-weight:700;font-size:12px;opacity:.72;margin-bottom:8px}
+.softwareLanding h1{letter-spacing:-.03em}
+.landingLead{max-width:520px;margin:0 auto 24px;line-height:1.6}
+.landingActions{display:grid;gap:12px;margin:20px 0}
+.landingActions a{text-decoration:none}
+.landingFeatures{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:18px 0}
+.landingFeatures span{padding:7px 10px;border:1px solid rgba(0,0,0,.08);border-radius:999px;font-size:12px}
