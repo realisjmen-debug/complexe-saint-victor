@@ -79,9 +79,12 @@ function SoftwareLanding(){
 }
 
 function Login({school,email,password,setEmail,setPassword,busy,error,onSubmit}:any){
- return <div className="login" style={{"--school-primary":school?.primary_color||"#0b3151","--school-secondary":school?.secondary_color||"#176bb3"} as React.CSSProperties}><div className="loginCard">
-  <div className="logo big">{school?.logo_url?<img src={school.logo_url} alt=""/>:"ML"}</div>
-  <div className="eyebrow">{school?.name||"ÉTABLISSEMENT"}</div>
+ const [branding,setBranding]=useState<any>(school||null);
+ useEffect(()=>{const slug=typeof window!=="undefined"?(new URLSearchParams(window.location.search).get("school")||window.location.pathname.match(/^\\/ecole\\/([^/]+)/)?.[1]||""):"";if(!slug)return;(async()=>{const {data,error}=await schoolSupabase.functions.invoke("parent-portal",{body:{action:"branding",school_slug:slug}});if(!error&&!data?.error&&data?.school)setBranding(data.school)})()},[school]);
+ const viewSchool=branding||school;
+ return <div className="login" style={{"--school-primary":viewSchool?.primary_color||"#0b3151","--school-secondary":viewSchool?.secondary_color||"#176bb3"} as React.CSSProperties}><div className="loginCard">
+  <div className="logo big">{viewSchool?.logo_url?<img src={viewSchool.logo_url} alt=""/>:"ML"}</div>
+  <div className="eyebrow">{viewSchool?.name||"ÉTABLISSEMENT"}</div>
   <h1>Accès sécurisé</h1>
   <p>Accès sécurisé à l’espace de gestion de votre établissement.</p>
   <form onSubmit={onSubmit}>
