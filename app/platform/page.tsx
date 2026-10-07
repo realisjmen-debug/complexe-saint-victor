@@ -3,7 +3,7 @@
 import {useEffect,useState} from "react";
 import {supabase} from "../../lib/supabase";
 import "./platform.css";
-import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw,UserPlus,X} from "lucide-react";
+import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw,UserPlus,X,Copy} from "lucide-react";
 
 type School={id:string;name:string;slug:string;status:string;city:string|null;phone:string|null;created_at:string};
 type Plan={id:string;name:string;label:string;price_monthly:number;price_yearly:number};
@@ -80,7 +80,7 @@ export default function PlatformPage(){
       <button className="btn full" disabled={busy}><Plus size={17}/>{busy?"Création…":"Créer l'école"}</button>
     </form>
     <div className="panel"><div className="sectionTitle"><Building2/><div><h3>Écoles enregistrées</h3><p>{schools.length} établissement(s)</p></div></div>
-      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><small className="schoolLink">Lien : /ecole/{s.slug}</small><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/ecole/"+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
+      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><div className="schoolLinks"><div><small>Connexion école</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}</code></div><div><small>Espace parent</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}/parent</code></div></div><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Copier le lien école" onClick={()=>navigator.clipboard?.writeText(window.location.origin+"/ecole/"+s.slug)}><Copy size={17}/></button><button className="iconBtn" title="Copier le lien parent" onClick={()=>navigator.clipboard?.writeText(window.location.origin+"/ecole/"+s.slug+"/parent")}><Copy size={17}/></button><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/ecole/"+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
     </div>
    </div>
    {adminSchool&&<div className="modalBackdrop" onClick={()=>!busy&&setAdminSchool(null)}>
@@ -94,6 +94,6 @@ export default function PlatformPage(){
        <button className="btn full" disabled={busy}><UserPlus size={17}/>{busy?"Création du compte…":"Créer l'administrateur"}</button>
      </form>
    </div>}
-   <div className="panel roadmap"><h3>Modèle commercial</h3><div className="road"><span><b>1</b>Créer l'école</span><span><b>2</b>Choisir le plan</span><span><b>3</b>Créer l'administrateur</span><span><b>4</b>Attribuer le sous-domaine</span><span><b>5</b>Activer / suspendre</span></div></div>
+   <div className="panel roadmap"><h3>Modèle commercial</h3><div className="road"><span><b>1</b>Créer l'école</span><span><b>2</b>Choisir le plan</span><span><b>3</b>Créer l'administrateur</span><span><b>4</b>Générer les liens école et parent</span><span><b>5</b>Activer / suspendre</span></div></div>
  </div>
 }
