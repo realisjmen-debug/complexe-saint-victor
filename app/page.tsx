@@ -49,7 +49,8 @@ function SoftwareLanding(){
   <p className="landingLead">La solution professionnelle de gestion scolaire pour établissements, équipes pédagogiques et administration.</p>
   <div className="landingFeatures"><span>Gestion scolaire</span><span>Finance</span><span>Études</span><span>Présences</span><span>Bulletins</span></div>
   <p className="landingLead" style={{fontSize:13,opacity:.75}}>Chaque établissement dispose de son propre lien sécurisé, généré depuis l’administration de la plateforme.</p>
-  <small>MONATSHIEBE LOGICIEL — plateforme de gestion scolaire.</small>
+  <div className="landingActions"><a className="btn full" href="/platform/login">Administration de la plateforme</a></div>
+  <small>Les établissements utilisent leur lien privé généré depuis l’administration.</small>
  </div></main>
 }
 
