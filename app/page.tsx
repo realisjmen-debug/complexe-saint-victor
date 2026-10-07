@@ -12,16 +12,11 @@ export default function Home(){
  useEffect(()=>{if(typeof window!=="undefined"&&window.location.hash&&(window.location.hash.includes("type=recovery")||window.location.hash.includes("access_token="))){window.location.replace("/platform/reset-password"+window.location.hash);return}const slug=new URLSearchParams(window.location.search).get("school")||"";setRequestedSlug(slug);if(slug)supabase.from("schools").select("*").eq("slug",slug).maybeSingle().then(({data})=>{if(data)setSchool(data)});supabase.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)loadUser(data.session.user.id,slug);else setLoading(false)});const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>{setSession(s);const currentSlug=typeof window!=="undefined"?new URLSearchParams(window.location.search).get("school")||"":"";if(s)loadUser(s.user.id,currentSlug);else{setProfile(null);setLoading(false)}});return()=>subscription.unsubscribe()},[]);
  async function loadUser(uid:string,slug=""){
   setLoading(true);setError("");
-  const {data:p,error:e}=await supabase.from("profiles").select("id,school_id,full_name,role_id,active").eq("id",uid).maybeSingle();
+  const {data:ctx,error:e}=await supabase.rpc("get_current_school_context");
+  const p=ctx?.[0]||null;
   if(e){setProfile(null);setError(e.message);setLoading(false);return}
-  if(!p?.active){setProfile(null);setError("Votre compte est authentifié, mais aucun accès à un établissement ne lui est encore attribué. Le Super Administrateur doit d'abord créer l'école puis vous affecter un rôle.");setLoading(false);return}
-  let roleData:any=null;
-  if(p.role_id){
-    const {data:r,error:re}=await supabase.from("roles").select("name,label").eq("id",p.role_id).maybeSingle();
-    if(re){setProfile(null);setError(re.message);setLoading(false);return}
-    roleData=r;
-  }
-  const normalized:any={...p,roles:roleData};
+  if(!p){setProfile(null);setError("Votre compte est authentifié, mais aucun accès à un établissement ne lui est encore attribué. Le Super Administrateur doit d'abord créer l'école puis vous affecter un rôle.");setLoading(false);return}
+  const normalized:any={id:p.id,school_id:p.school_id,full_name:p.full_name,role_id:p.role_id,active:p.active,roles:p.role_name?{name:p.role_name,label:p.role_label}:null};
   if(slug){
     const {data:target,error:te}=await supabase.from("schools").select("*").eq("slug",slug).maybeSingle();
     if(te||!target){setProfile(null);setError("Établissement introuvable.");setLoading(false);return}
