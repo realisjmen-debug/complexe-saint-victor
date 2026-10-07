@@ -14,5 +14,17 @@ const allowed=["administrateur","directeur","comptable","enseignant","etudes","f
 const {data:role,error:re}=await db.from("roles").select("id,name,label").eq("name",roleName).maybeSingle();if(re||!role)return json({error:"Rôle introuvable."},400);
 const {data:created,error:ce}=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{full_name:fullName,school_id:profile.school_id}});if(ce||!created.user)return json({error:"Création du compte impossible: "+(ce?.message||"réponse vide")},400);
 const {error:ie}=await db.rpc("create_school_profile",{p_user_id:created.user.id,p_school_id:profile.school_id,p_role_id:role.id,p_full_name:fullName,p_phone:phone});if(ie){await db.auth.admin.deleteUser(created.user.id);return json({error:"Le compte a été créé mais son accès à l'école a échoué: "+ie.message},500);}
+const uniqueRoles=["administrateur","directeur","secretaire","finance","comptable","etudes","discipline","surveillant"];
+if(uniqueRoles.includes(roleName)){
+ const {data:existing}=await db.from("profiles").select("id").eq("school_id",profile.school_id).eq("role_id",role.id).eq("active",true).neq("id",created.user.id).limit(1);
+ if(existing?.length){await db.from("profiles").delete().eq("id",created.user.id);await db.auth.admin.deleteUser(created.user.id);return json({error:"Ce rôle est déjà attribué à une personne active dans cette école."},409);}
+}
+if(roleName==="enseignant"){
+ const accessCode="T-"+crypto.randomUUID().replaceAll("-","").slice(0,10).toUpperCase();
+ const {data:teacher}=await db.from("teachers").select("id").eq("school_id",profile.school_id).eq("email",email).maybeSingle();
+ if(teacher) await db.from("teachers").update({access_code:accessCode,active:true}).eq("id",teacher.id);
+ else await db.from("teachers").insert({school_id:profile.school_id,matricule:"ENS-"+new Date().getFullYear()+"-"+String(Date.now()).slice(-5),last_name:fullName.split(" ").slice(-1).join(" "),first_name:fullName.split(" ").slice(0,-1).join(" ")||fullName,email,phone:phone||null,active:true,access_code:accessCode});
+ return json({success:true,user:{id:created.user.id,email,full_name:fullName,role:role.label,access_code:accessCode}});
+}
 return json({success:true,user:{id:created.user.id,email,full_name:fullName,role:role.label}});
 }catch(e){return json({error:e instanceof Error?e.message:"Erreur serveur."},500)}});
