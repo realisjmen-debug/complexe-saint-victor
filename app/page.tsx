@@ -177,12 +177,128 @@ function Students({profile,can}:any){
  async function uploadPhoto(student:any,file:File){setPhotoBusy(student.id);setMsg("");const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=`${profile.school_id}/students/${crypto.randomUUID()}.${ext}`;const {error:ue}=await supabase.storage.from("school-assets").upload(path,file,{upsert:false,contentType:file.type||"image/jpeg"});if(ue){setMsg("Photo non envoyée : "+ue.message);setPhotoBusy(null);return}const {error}=await supabase.from("students").update({photo_path:path,photo_url:null}).eq("id",student.id).eq("school_id",profile.school_id);if(error)setMsg("Photo envoyée mais dossier non mis à jour : "+error.message);else await load();setPhotoBusy(null)}
  return <><div className="head"><div><h1>Élèves</h1><p>Consultation des dossiers et génération des cartes d’élève.</p></div>{msg&&<div className="notice">{msg}</div>}</div><div className="panel"><div className="toolbar"><div className="miniSearch"><Search size={17}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Nom, prénom, matricule, téléphone…"/></div><button className="btn light" onClick={()=>window.print()}><Printer size={17}/> Imprimer</button></div><div className="tableWrap"><table><thead><tr><th>Matricule</th><th>Élève</th><th>Photo</th><th>Sexe</th><th>Téléphone</th><th>Code parent</th><th>Statut</th><th>Carte</th></tr></thead><tbody>{filtered.map(s=><tr key={s.id}><td><b>{s.matricule}</b></td><td>{s.last_name} {s.first_name} {s.post_name||""}</td><td>{s.photo_url?<img src={s.photo_url} alt="" style={{width:38,height:48,objectFit:"cover",borderRadius:6}}/>:<span>—</span>}{can("secretaire")&&<label className="btn light" style={{marginTop:5,fontSize:11,cursor:"pointer"}}>{photoBusy===s.id?"Envoi…":"Ajouter photo"}<input type="file" accept="image/*" capture="environment" hidden disabled={photoBusy!==null} onChange={e=>{const file=e.target.files?.[0];if(file)uploadPhoto(s,file)}}/></label>}</td><td>{s.sex||"—"}</td><td>{s.phone||"—"}</td><td><code>{s.parent_access_code||"—"}</code></td><td><span className="badge">{s.active?"Actif":"Inactif"}</span></td><td><button className="btn light" onClick={()=>setCard(s)}><CreditCardIcon/> Carte</button></td></tr>)}{!filtered.length&&<tr><td colSpan={8} className="empty">Aucun élève enregistré.</td></tr>}</tbody></table></div></div>{card&&<StudentCard student={card} schoolId={profile.school_id} onClose={()=>setCard(null)}/>}</>
 }
-function StudentCard({student,schoolId,onClose}:any){
- const [school,setSchool]=useState<any>(null),[year,setYear]=useState("2026-2027");
- useEffect(()=>{Promise.all([supabase.from("schools").select("*").eq("id",schoolId).single(),supabase.from("academic_years").select("name").eq("school_id",schoolId).eq("is_current",true).maybeSingle()]).then(async([s,y])=>{const schoolData=s.data;if(schoolData?.logo_path){schoolData.logo_url=await signedAsset(schoolData.logo_path)||schoolData.logo_url}if(student.photo_path)student.photo_url=await signedAsset(student.photo_path)||student.photo_url;setSchool(schoolData);setYear(y.data?.name||"2026-2027")})},[schoolId,student.id,student.photo_path]);
- return <div className="modalBackdrop" onClick={onClose}><div className="panel cardModal" onClick={e=>e.stopPropagation()}><div className="studentCardSheet" id="student-card-print"><div className="studentCardSide front"><div className="cardHeader">{school?.logo_url&&<img src={school.logo_url} alt="Logo"/>}<div><b>{school?.name||"Établissement scolaire"}</b><small>RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</small></div></div><div className="cardTitle">CARTE D'ÉLÈVE</div><div className="cardBody"><div className="studentPhoto">{student.photo_url?<img src={student.photo_url} alt="Photo"/>:<span>PHOTO</span>}</div><div className="studentIdentity"><b>{student.last_name} {student.first_name} {student.post_name||""}</b><p>Matricule : <strong>{student.matricule}</strong></p><p>Sexe : {student.sex||"—"}</p><p>Né(e) le : {student.date_of_birth?new Date(student.date_of_birth).toLocaleDateString("fr-FR"):"—"}</p><p>Année scolaire : {year}</p></div></div></div><div className="studentCardSide back"><div className="cardTitle">INFORMATIONS DE L'ÉTABLISSEMENT</div><p><b>{school?.name}</b></p><p>{school?.address||"Adresse de l’établissement"}</p><p>{school?.city||"Kinshasa"} • {school?.phone||""}</p><div className="cardRule"/><p>Cette carte appartient à l’établissement et doit être présentée à toute réquisition autorisée.</p><div className="cardBottom"><span>Signature / Cachet</span><b>{student.matricule}</b></div></div></div><div className="cardActions"><button className="btn" onClick={()=>window.print()}><Printer size={16}/> Imprimer recto-verso</button><button className="btn light" onClick={onClose}>Fermer</button></div></div></div>
+function DRCMark(){
+ return <div className="drcMark" title="République démocratique du Congo" aria-label="République démocratique du Congo">
+  <svg viewBox="0 0 64 44" role="img" aria-hidden="true">
+   <rect x="1" y="1" width="62" height="42" rx="6" fill="#007FFF"/>
+   <path d="M-2 39 L58 -2 L66 10 L6 51 Z" fill="#F7D117"/>
+   <path d="M-2 36 L58 -5 L63 3 L3 44 Z" fill="#CE1021"/>
+   <path d="M10 8 L13 15 L20 15 L14.5 19.5 L16.5 26.5 L10 22.5 L3.5 26.5 L5.5 19.5 L0 15 L7 15 Z" fill="#F7D117"/>
+  </svg>
+  <span>RDC</span>
+ </div>
 }
 
+function StudentCard({student,schoolId,onClose}:any){
+ const [school,setSchool]=useState<any>(null),[year,setYear]=useState("2026-2027");
+ useEffect(()=>{
+  Promise.all([
+   supabase.from("schools").select("*").eq("id",schoolId).single(),
+   supabase.from("academic_years").select("name").eq("school_id",schoolId).eq("is_current",true).maybeSingle()
+  ]).then(async([s,y])=>{
+   const schoolData=s.data;
+   if(schoolData?.logo_path){
+    schoolData.logo_url=await signedAsset(schoolData.logo_path)||schoolData.logo_url
+   }
+   if(student.photo_path){
+    student.photo_url=await signedAsset(student.photo_path)||student.photo_url
+   }
+   setSchool(schoolData);
+   setYear(y.data?.name||"2026-2027")
+  })
+ },[schoolId,student.id,student.photo_path]);
+
+ const fullName=[student.last_name,student.first_name,student.post_name].filter(Boolean).join(" ");
+ const birth=student.date_of_birth?new Date(student.date_of_birth).toLocaleDateString("fr-FR"):"—";
+
+ return <div className="modalBackdrop" onClick={onClose}>
+  <div className="panel cardModal" onClick={e=>e.stopPropagation()}>
+   <div className="studentCardSheet" id="student-card-print">
+
+    <div className="studentCardSide front">
+     <div className="studentCardTop">
+      <div className="schoolIdentity">
+       <div className="schoolLogoFrame">
+        {school?.logo_url?<img src={school.logo_url} alt="Logo de l'établissement"/>:<span>SV</span>}
+       </div>
+       <div className="schoolIdentityText">
+        <b>{school?.name||"Établissement scolaire"}</b>
+        <small>ÉTABLISSEMENT SCOLAIRE</small>
+       </div>
+      </div>
+      <DRCMark/>
+     </div>
+
+     <div className="cardGoldLine"/>
+
+     <div className="studentCardLabel">
+      <span>DOCUMENT SCOLAIRE OFFICIEL</span>
+      <strong>CARTE D'ÉLÈVE</strong>
+      <small>Année scolaire {year}</small>
+     </div>
+
+     <div className="studentCardMain">
+      <div className="studentPhoto premium">
+       {student.photo_url?<img src={student.photo_url} alt={"Photo de "+fullName}/>:<div><span>PHOTO</span><small>ÉLÈVE</small></div>}
+      </div>
+
+      <div className="studentIdentity premium">
+       <span className="studentName">{fullName||"Nom de l'élève"}</span>
+       <div className="studentMetaGrid">
+        <div><small>MATRICULE</small><b>{student.matricule||"—"}</b></div>
+        <div><small>SEXE</small><b>{student.sex||"—"}</b></div>
+        <div><small>DATE DE NAISSANCE</small><b>{birth}</b></div>
+        <div><small>CODE PARENT</small><b>{student.parent_access_code||"—"}</b></div>
+       </div>
+      </div>
+     </div>
+
+     <div className="studentCardFooter">
+      <div><small>Établissement</small><b>{school?.city||"Kinshasa"}</b></div>
+      <div className="studentStatus"><span/> ÉLÈVE ACTIF</div>
+      <div className="cardSerial">{student.matricule||"—"}</div>
+     </div>
+    </div>
+
+    <div className="studentCardSide back">
+     <div className="backBrand">
+      <div className="schoolLogoFrame small">{school?.logo_url?<img src={school.logo_url} alt=""/>:<span>SV</span>}</div>
+      <div><b>{school?.name||"Établissement scolaire"}</b><small>Savoir • Discipline • Réussite</small></div>
+      <DRCMark/>
+     </div>
+     <div className="cardGoldLine"/>
+     <div className="backTitle">INFORMATIONS & VALIDITÉ</div>
+
+     <div className="backGrid">
+      <div><small>ADRESSE</small><b>{school?.address||"Adresse de l’établissement"}</b></div>
+      <div><small>CONTACT</small><b>{school?.phone||"—"}</b></div>
+      <div><small>VILLE</small><b>{school?.city||"Kinshasa"}</b></div>
+      <div><small>ANNÉE</small><b>{year}</b></div>
+     </div>
+
+     <div className="cardNotice">
+      Cette carte est strictement personnelle. Elle doit être présentée sur demande et reste la propriété de l'établissement.
+     </div>
+
+     <div className="backSignatures">
+      <div><span>Signature / Cachet</span><i/></div>
+      <div><span>Matricule</span><b>{student.matricule||"—"}</b></div>
+     </div>
+
+     <div className="backFooter">
+      <span>RÉPUBLIQUE DÉMOCRATIQUE DU CONGO</span>
+      <b>CARTE SCOLAIRE</b>
+     </div>
+    </div>
+   </div>
+
+   <div className="cardActions">
+    <button className="btn" onClick={()=>window.print()}><Printer size={16}/> Imprimer recto-verso</button>
+    <button className="btn light" onClick={onClose}>Fermer</button>
+   </div>
+  </div>
+ </div>
+}
 function Studies({profile,can}:any){
  const [tab,setTab]=useState("classes"),[rows,setRows]=useState<any[]>([]),[show,setShow]=useState(false),[editId,setEditId]=useState<string|null>(null),[msg,setMsg]=useState("");
  const [form,setForm]=useState<any>({name:"",room:"",capacity:"",section_name:"",option_name:"",first_name:"",last_name:"",phone:"",subject:"",code:"",coefficient:"1",section_group:"Humanités générales",stage:"",option_stage:"",room_type:"Classe"});
