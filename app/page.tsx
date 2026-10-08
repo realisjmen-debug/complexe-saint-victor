@@ -182,12 +182,12 @@ function Students({profile,can}:any){
  return <><div className="head"><div><h1>Élèves</h1><p>Consultation des dossiers et génération des cartes d’élève.</p></div>{msg&&<div className="notice">{msg}</div>}</div><div className="panel"><div className="toolbar"><div className="miniSearch"><Search size={17}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Nom, prénom, matricule, téléphone…"/></div><button className="btn light" onClick={()=>window.print()}><Printer size={17}/> Imprimer</button></div><div className="tableWrap"><table><thead><tr><th>Matricule</th><th>Élève</th><th>Photo</th><th>Sexe</th><th>Téléphone</th><th>Code parent</th><th>Statut</th><th>Carte</th></tr></thead><tbody>{filtered.map(s=><tr key={s.id}><td><b>{s.matricule}</b></td><td>{s.last_name} {s.first_name} {s.post_name||""}</td><td>{s.photo_url?<img src={s.photo_url} alt="" style={{width:38,height:48,objectFit:"cover",borderRadius:6}}/>:<span>—</span>}{can("secretaire")&&<label className="btn light" style={{marginTop:5,fontSize:11,cursor:"pointer"}}>{photoBusy===s.id?"Envoi…":"Ajouter photo"}<input type="file" accept="image/*" capture="environment" hidden disabled={photoBusy!==null} onChange={e=>{const file=e.target.files?.[0];if(file)uploadPhoto(s,file)}}/></label>}</td><td>{s.sex||"—"}</td><td>{s.phone||"—"}</td><td><code>{s.parent_access_code||"—"}</code></td><td><span className="badge">{s.active?"Actif":"Inactif"}</span></td><td><button className="btn light" onClick={()=>setCard(s)}><CreditCardIcon/> Carte</button></td></tr>)}{!filtered.length&&<tr><td colSpan={8} className="empty">Aucun élève enregistré.</td></tr>}</tbody></table></div></div>{card&&<StudentCard student={card} schoolId={profile.school_id} onClose={()=>setCard(null)}/>}</>
 }
 function DRCMark(){
- return <div className="drcMark" title="République démocratique du Congo" aria-label="République démocratique du Congo">
-  <svg viewBox="0 0 64 44" role="img" aria-hidden="true">
-   <rect x="1" y="1" width="62" height="42" rx="6" fill="#007FFF"/>
-   <path d="M-2 39 L58 -2 L66 10 L6 51 Z" fill="#F7D117"/>
-   <path d="M-2 36 L58 -5 L63 3 L3 44 Z" fill="#CE1021"/>
-   <path d="M10 8 L13 15 L20 15 L14.5 19.5 L16.5 26.5 L10 22.5 L3.5 26.5 L5.5 19.5 L0 15 L7 15 Z" fill="#F7D117"/>
+ return <div className="drcMark" title="Drapeau officiel de la République démocratique du Congo" aria-label="Drapeau de la République démocratique du Congo">
+  <svg viewBox="0 0 90 60" role="img" aria-hidden="true">
+   <rect width="90" height="60" fill="#00A3E0"/>
+   <path d="M-8 60 L82 -8 L98 8 L8 76 Z" fill="#F7D618"/>
+   <path d="M-4 60 L86 -8 L94 0 L4 68 Z" fill="#CE1021"/>
+   <polygon points="20,6 23.8,14 32.5,14.8 26,20.7 27.8,29.2 20,24.7 12.2,29.2 14,20.7 7.5,14.8 16.2,14" fill="#F7D618"/>
   </svg>
   <span>RDC</span>
  </div>
@@ -306,7 +306,7 @@ function StudentCard({student,schoolId,onClose}:any){
 function Studies({profile,can}:any){
  const [tab,setTab]=useState("classes"),[rows,setRows]=useState<any[]>([]),[show,setShow]=useState(false),[editId,setEditId]=useState<string|null>(null),[msg,setMsg]=useState("");
  const [form,setForm]=useState<any>({name:"",room:"",capacity:"",section_name:"",option_name:"",first_name:"",last_name:"",phone:"",subject:"",code:"",coefficient:"1",section_group:"Humanités générales",stage:"",option_stage:"",room_type:"Classe"});
- const editable=can("etudes");
+ const editable=can("etudes")&&tab!=="teachers";
  const tabs=[["classes","Classes"],["teachers","Enseignants"],["subjects","Matières"],["options","Options / filières"],["rooms","Salles"]];
  async function load(){const table=tab==="teachers"?"teachers":tab==="subjects"?"subjects":tab==="options"?"school_options":tab==="rooms"?"rooms":"classes";const {data}=await supabase.from(table).select("*").eq("school_id",profile.school_id).order("name");setRows(data||[])}
  useEffect(()=>{load()},[profile.school_id,tab]);
