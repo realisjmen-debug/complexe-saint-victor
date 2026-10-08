@@ -51,21 +51,21 @@ export default function Home(){
  const can=(...r:string[])=>{const ov=profile.permission_overrides||{};if(r.some(k=>ov[k]===true))return true;if(r.includes(role)&&ov[role]===false)return false;return r.includes(role)};
  const nav:any[]=[
   ["dashboard","Tableau de bord",LayoutDashboard,!["discipline","surveillant","enseignant"].includes(role)],
-  ["students","Élèves",Users,can("promoteur","directeur","administrateur","secretaire","discipline","surveillant")],
-  ["parents","Parents",HeartHandshake,can("promoteur","directeur","administrateur","secretaire","discipline","surveillant")],
-  ["enrollments","Inscriptions",ClipboardList,can("promoteur","directeur","secretaire")],
-  ["studies","Études",GraduationCap,can("promoteur","directeur","etudes")],
-  ["assignments","Affectations enseignants",UserCog,can("promoteur","directeur","etudes")],
-  ["attendance","Présences",CalendarCheck,can("promoteur","directeur","discipline")],
-  ["discipline","Discipline",ShieldCheck,can("promoteur","directeur","discipline","surveillant")],
-  ["schedule","Emploi du temps",CalendarCheck,can("promoteur","directeur","etudes","secretaire","discipline","surveillant")],
-  ["grades","Notes & évaluations",BarChart3,can("promoteur","directeur","etudes")],
-  ["reportcards","Relevés de cote",FileText,can("promoteur","directeur","etudes","secretaire")],
-  ["finance","Finances",Wallet,can("promoteur","directeur","finance","comptable")],
-  ["studentFinance","Situation financière des élèves",Wallet,can("promoteur","directeur","finance","comptable")],
-  ["staff","Personnel",UserCog,can("promoteur","directeur","administrateur")],
-  ["announcements","Communications",MessageSquare,can("promoteur","directeur","etudes","secretaire")],
-  ["settings","Paramètres",Settings,can("promoteur")],["audit","Journal d’activité",ClipboardList,can("promoteur","directeur","finance")]
+  ["students","Élèves",Users,can("students","promoteur","directeur","administrateur","secretaire","discipline","surveillant")],
+  ["parents","Parents",HeartHandshake,can("parents","promoteur","directeur","administrateur","secretaire","discipline","surveillant")],
+  ["enrollments","Inscriptions",ClipboardList,can("enrollments","promoteur","directeur","secretaire")],
+  ["studies","Études",GraduationCap,can("studies","promoteur","directeur","etudes")],
+  ["assignments","Affectations enseignants",UserCog,can("assignments","promoteur","directeur","etudes")],
+  ["attendance","Présences",CalendarCheck,can("attendance","promoteur","directeur","discipline")],
+  ["discipline","Discipline",ShieldCheck,can("discipline","promoteur","directeur","discipline","surveillant")],
+  ["schedule","Emploi du temps",CalendarCheck,can("schedule","promoteur","directeur","etudes","secretaire","discipline","surveillant")],
+  ["grades","Notes & évaluations",BarChart3,can("grades","promoteur","directeur","etudes")],
+  ["reportcards","Relevés de cote",FileText,can("reportcards","promoteur","directeur","etudes","secretaire")],
+  ["finance","Finances",Wallet,can("finance","promoteur","directeur","finance","comptable")],
+  ["studentFinance","Situation financière des élèves",Wallet,can("studentFinance","promoteur","directeur","finance","comptable")],
+  ["staff","Personnel",UserCog,can("staff","promoteur","directeur","administrateur")],
+  ["announcements","Communications",MessageSquare,can("announcements","promoteur","directeur","etudes","secretaire")],
+  ["settings","Paramètres",Settings,can("settings","promoteur")],["audit","Journal d’activité",ClipboardList,can("audit","promoteur","directeur","finance")]
  ];
  return <div className="app" style={{"--school-primary":school?.primary_color||"#103b64","--school-secondary":school?.secondary_color||"#d4af37"} as React.CSSProperties}><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school} role={role}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="assignments"&&<TeacherAssignments profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="discipline"&&<Discipline profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<><Finance profile={profile} can={can}/><FeeTracking profile={profile}/><FeeInstallmentManager profile={profile} can={can}/></>} {page==="studentFinance"&&<StudentFinance profile={profile} can={can}/>} {page==="staff"&&<Staff profile={profile}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>} {page==="audit"&&<AuditLog profile={profile}/>}</section></main></div>;
 }
@@ -332,7 +332,7 @@ function Studies({profile,can}:any){
  <div className="panel tableWrap"><table><thead><tr>{tab==="classes"?<><th>Classe</th><th>Section</th><th>Option</th><th>Salle</th><th>Capacité</th></>:tab==="teachers"?<><th>Matricule</th><th>Enseignant</th><th>Matière</th><th>Téléphone</th><th>Code portail</th></>:tab==="subjects"?<><th>Code</th><th>Matière</th><th>Domaine</th><th>Coefficient</th></>:tab==="options"?<><th>Option / filière</th><th>Groupe</th><th>Code</th></>:<><th>Salle</th><th>Code</th><th>Type</th><th>Capacité</th></>}{editable&&<th>Actions</th>}</tr></thead><tbody>{rows.map(x=><tr key={x.id}>{tab==="classes"?<><td>{x.name}</td><td>{x.section_name||"—"}</td><td>{x.option_name||"—"}</td><td>{x.room||"—"}</td><td>{x.capacity||"—"}</td></>:tab==="teachers"?<><td>{x.matricule}</td><td>{x.last_name} {x.first_name}</td><td>{x.subject||"—"}</td><td>{x.phone||"—"}</td><td><code>{x.access_code||"—"}</code></td></>:tab==="subjects"?<><td>{x.code||"—"}</td><td>{x.name}</td><td>{x.section_group||"Commun"}</td><td>{x.coefficient}</td></>:tab==="options"?<><td>{x.name}</td><td>{x.section_group||"—"}</td><td>{x.code||"—"}</td></>:<><td>{x.name}</td><td>{x.code||"—"}</td><td>{x.type||"Classe"}</td><td>{x.capacity||"—"}</td></>}{editable&&<td><button className="btn light" onClick={()=>begin(x)}>Modifier</button> <button className="btn light" onClick={()=>remove(x.id)}>Supprimer</button></td>}</tr>)}</tbody></table>{!rows.length&&<p className="empty">Aucune donnée enregistrée.</p>}</div></>}
 
 function Discipline({profile,can}:any){
- const editable=can("discipline");
+ const editable=can("attendance","discipline");
  const [rows,setRows]=useState<any[]>([]),[students,setStudents]=useState<any[]>([]),[studentId,setStudentId]=useState(""),[msg,setMsg]=useState("");
  const [form,setForm]=useState<any>({record_date:today(),sanction_type:"Observation",reason:"",action_taken:"",parent_contacted:false,parent_contact_note:""});
  async function load(){const [{data:s},{data:r}]=await Promise.all([
@@ -345,7 +345,7 @@ function Discipline({profile,can}:any){
 }
 
 function TeacherAssignments({profile,can}:any){
- const editable=can("etudes");
+ const editable=can("assignments","etudes");
  const [rows,setRows]=useState<any[]>([]);
  const [teachers,setTeachers]=useState<any[]>([]);
  const [classes,setClasses]=useState<any[]>([]);
@@ -565,7 +565,7 @@ function FeeTracking({profile}:any){
 }
 function FeeInstallmentManager({profile,can}:any){
  const [fees,setFees]=useState<any[]>([]),[rows,setRows]=useState<any[]>([]),[open,setOpen]=useState(false),[form,setForm]=useState<any>({fee_id:"",name:"",installment_number:1,amount:"",currency:"USD",due_date:""});
- const editable=can("finance");
+ const editable=can("studentFinance","finance");
  async function load(){const [f,r]=await Promise.all([supabase.from("fees").select("id,name,currency").eq("school_id",profile.school_id).eq("active",true).order("name"),supabase.from("fee_installments").select("*").eq("school_id",profile.school_id).order("fee_id").order("installment_number")]);setFees(f.data||[]);setRows(r.data||[])}
  useEffect(()=>{load()},[profile.school_id]);
  async function save(e:React.FormEvent){e.preventDefault();if(!editable)return;const f=fees.find((x:any)=>x.id===form.fee_id);const {error}=await supabase.from("fee_installments").insert({school_id:profile.school_id,fee_id:form.fee_id,name:form.name,installment_number:Number(form.installment_number),amount:Number(form.amount),currency:form.currency,due_date:form.due_date||null,active:true});if(!error){setOpen(false);setForm({fee_id:"",name:"",installment_number:1,amount:"",currency:f?.currency||"USD",due_date:""});load()}}
@@ -604,7 +604,7 @@ function Attendance({profile,can}:any){
  useEffect(()=>{supabase.from("classes").select("id,name").eq("school_id",profile.school_id).order("name").then(({data})=>{setClasses(data||[]);if(!classId&&data?.[0])setClassId(data[0].id)})},[profile.school_id]);
  useEffect(()=>{if(!classId)return;(async()=>{const {data:e}=await supabase.from("enrollments").select("student_id").eq("school_id",profile.school_id).eq("class_id",classId).eq("status","active");const ids=(e||[]).map(x=>x.student_id);if(!ids.length){setStudents([]);setRows([]);setStats({present:0,absent:0,late:0,excused:0,total:0});return}const [{data:s},{data:a}]=await Promise.all([supabase.from("students").select("id,matricule,last_name,first_name").in("id",ids).order("last_name"),supabase.from("attendance").select("student_id,status,note").eq("school_id",profile.school_id).eq("class_id",classId).eq("attendance_date",date)]);setStudents(s||[]);const map=new Map((a||[]).map(x=>[x.student_id,x]));const next=(s||[]).map(st=>({student_id:st.id,status:map.get(st.id)?.status||"present",note:map.get(st.id)?.note||""}));setRows(next);setStats(next.reduce((a:any,x:any)=>(a[x.status]=(a[x.status]||0)+1,a),{present:0,absent:0,late:0,excused:0,total:next.length}));})()},[classId,date,profile.school_id]);
  useEffect(()=>{(async()=>{const {data}=await supabase.from("attendance").select("status").eq("school_id",profile.school_id).eq("attendance_date",date);const x=data||[];setSchoolStats(x.reduce((a:any,r:any)=>(a[r.status]=(a[r.status]||0)+1,a),{present:0,absent:0,late:0,excused:0,total:x.length}))})()},[date,profile.school_id]);
- const editable=can("discipline");
+ const editable=can("discipline","discipline");
  async function save(){if(!editable)return;setMsg("");await supabase.from("attendance").delete().eq("school_id",profile.school_id).eq("class_id",classId).eq("attendance_date",date);const payload=rows.map(x=>({school_id:profile.school_id,student_id:x.student_id,class_id:classId,attendance_date:date,status:x.status,note:x.note||null}));const {error}=payload.length?await supabase.from("attendance").insert(payload):{error:null};if(error)setMsg(error.message);else setMsg("Présences enregistrées.");}
  return <><div className="head"><div><h1>Présences</h1><p>Pointage quotidien par classe. Seul le Chargé de discipline peut modifier.</p></div>{editable&&<button className="btn" onClick={save}><Save size={17}/> Enregistrer</button>}</div><div className="panel formGrid"><label>Classe<select value={classId} onChange={e=>setClassId(e.target.value)}><option value="">Choisir…</option>{classes.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label></div><div className="cards" style={{marginTop:12}}><Stat title="Présents — classe" value={stats.present} icon={<CheckCircle/>}/><Stat title="Absents — classe" value={stats.absent} icon={<AlertTriangle/>}/><Stat title="En retard — classe" value={stats.late} icon={<CalendarCheck/>}/><Stat title="Présence — école" value={schoolStats.total?Math.round((schoolStats.present/schoolStats.total)*100)+"%":"—"} icon={<BarChart3/>}/></div>{msg&&<div className="notice" style={{marginTop:12}}>{msg}</div>}<div className="panel tableWrap" style={{marginTop:12}}><table><thead><tr><th>Matricule</th><th>Élève</th><th>Statut</th><th>Note</th></tr></thead><tbody>{students.map((s,i)=><tr key={s.id}><td>{s.matricule}</td><td>{s.last_name} {s.first_name}</td><td>{editable?<select value={rows[i]?.status||"present"} onChange={e=>setRows(rs=>rs.map((x,j)=>j===i?{...x,status:e.target.value}:x))}><option value="present">Présent</option><option value="absent">Absent</option><option value="late">En retard</option><option value="excused">Justifié</option></select>:({present:"Présent",absent:"Absent",late:"En retard",excused:"Justifié"} as any)[rows[i]?.status||"present"]}</td><td>{editable?<input value={rows[i]?.note||""} onChange={e=>setRows(rs=>rs.map((x,j)=>j===i?{...x,note:e.target.value}:x))}/>:rows[i]?.note||"—"}</td></tr>)}{!students.length&&<tr><td colSpan={4} className="empty">Aucun élève actif inscrit dans cette classe.</td></tr>}</tbody></table></div></>
 }
