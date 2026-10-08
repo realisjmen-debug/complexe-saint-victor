@@ -682,11 +682,10 @@ function Staff({profile}:any){
   if(editing){
    const roleName=String(form.role_name||"");
    if(roleName==="promoteur"){setMsg("Le rôle Promoteur principal ne peut pas être attribué depuis ce formulaire.");setBusy(false);return}
-   const {data:role,error:roleError}=await supabase.from("roles").select("id,name").eq("name",roleName).maybeSingle();
-   if(roleError||!role){setMsg(roleError?.message||"Rôle introuvable.");setBusy(false);return}
-   const {error}=await supabase.from("profiles").update({full_name:form.full_name.trim(),phone:form.phone.trim()||null,role_id:role.id}).eq("id",editing.id).eq("school_id",profile.school_id);
-   if(error){setMsg("Modification refusée : "+error.message);setBusy(false);return}
-   setMsg("Personnel modifié.");setEditing(null);await load();setBusy(false);return
+   const {data,error}=await supabase.functions.invoke("manage-school-user",{body:{action:"update",target_profile_id:editing.id,full_name:form.full_name.trim(),phone:form.phone.trim(),role_name:roleName}});
+   if(error){let detail=error.message;try{const b=await (error as any).context?.json?.();if(b?.error)detail=b.error}catch{}setMsg(detail||"Modification refusée.");setBusy(false);return}
+   if(data?.error){setMsg(data.error);setBusy(false);return}
+   setMsg(data?.message||"Personnel modifié.");setEditing(null);await load();setBusy(false);return
   }
   const {data,error}=await supabase.functions.invoke("create-school-user",{body:{school_id:profile.school_id,...form}});
   if(error){let detail=error.message;try{const b=await (error as any).context?.json?.();if(b?.error)detail=b.error}catch{}setMsg(detail||"Création impossible.");setBusy(false);return}
@@ -697,8 +696,8 @@ function Staff({profile}:any){
   if(x.roles?.name==="promoteur"){setMsg("Le compte du Promoteur principal ne peut pas être retiré depuis cette liste.");return}
   if(!window.confirm("Retirer l’accès de "+(x.full_name||"ce membre du personnel")+" ? Son historique sera conservé."))return;
   setBusy(true);setMsg("");
-  const {error}=await supabase.from("profiles").update({active:false}).eq("id",x.id).eq("school_id",profile.school_id);
-  if(error)setMsg("Retrait impossible : "+error.message);else{setMsg("Accès retiré. L’historique est conservé.");if(editing?.id===x.id)setEditing(null);if(editingPermissions?.id===x.id)setEditingPermissions(null);await load()}
+  const {data,error}=await supabase.functions.invoke("manage-school-user",{body:{action:"deactivate",target_profile_id:x.id}});
+  if(error){let detail=error.message;try{const b=await (error as any).context?.json?.();if(b?.error)detail=b.error}catch{}setMsg("Retrait impossible : "+(detail||"erreur inconnue"));}else if(data?.error)setMsg(data.error);else{setMsg(data?.message||"Accès retiré. L’historique est conservé.");if(editing?.id===x.id)setEditing(null);if(editingPermissions?.id===x.id)setEditingPermissions(null);await load()}
   setBusy(false)
  }
  return <><div className="head"><div><h1>Personnel & autorisations</h1><p>Ajoutez le personnel, attribuez les rôles, modifiez les informations et retirez les accès. Le Promoteur principal contrôle les autorisations complémentaires.</p></div><button className="btn" onClick={()=>{setShow(!show);setEditing(null);setMsg("")}}><UserCog size={17}/> Ajouter un utilisateur</button></div>
