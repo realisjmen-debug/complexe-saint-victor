@@ -659,6 +659,8 @@ function Staff({profile}:any){
   const [show,setShow]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
   const [teacherCode,setTeacherCode]=useState("");
   const [form,setForm]=useState<any>({full_name:"",email:"",phone:"",password:"",role_name:"secretaire"});
+  const [editingPermissions,setEditingPermissions]=useState<any|null>(null);
+  const permissionChoices:[string,string][]=[["directeur","Direction"],["administrateur","Administration système"],["secretaire","Secrétariat"],["etudes","Études"],["discipline","Discipline"],["surveillant","Surveillance"],["finance","Finances"],["comptable","Comptabilité / caisse"],["enseignant","Enseignement"]];
  async function load(){const {data}=await supabase.from("profiles").select("id,full_name,phone,active,permission_overrides,roles(name,label)").eq("school_id",profile.school_id).order("created_at",{ascending:false});setRows(data||[])}
  useEffect(()=>{load()},[profile.school_id]);
  async function savePermissions(){if(!editingPermissions)return;setBusy(true);setMsg("");const {error}=await supabase.rpc("set_staff_permission_overrides",{target_profile_id:editingPermissions.id,overrides:editingPermissions.permission_overrides||{}});if(error)setMsg(error.message);else{setMsg("Autorisations mises à jour et journalisées.");setEditingPermissions(null);await load()}setBusy(false)}
