@@ -65,16 +65,16 @@
 .backBrand>div:nth-child(2) b{display:block;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .backBrand>div:nth-child(2) small{display:block;margin-top:.7mm;font-size:4.2px;color:#788697}
 .backBrand .drcMark{margin-left:auto}
-.backTitle{position:relative;z-index:2;text-align:center;color:#103b64;font-size:8px;font-weight:950;letter-spacing:.12em;margin:3mm 0}
-.backGrid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:2.5mm 5mm;padding:0 1mm}
-.backGrid b{display:block;font-size:5.5px;line-height:1.2;margin-top:.6mm;color:#2b3e53}
-.cardNotice{position:relative;z-index:2;margin-top:3.2mm;padding:2.3mm 2.5mm;border-left:1mm solid #d4af37;background:rgba(255,255,255,.72);font-size:5px;line-height:1.45;color:#58697d}
-.backSignatures{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:8mm;display:flex;justify-content:space-between;align-items:end;gap:8mm}
+.backTitle{position:relative;z-index:2;text-align:center;color:#103b64;font-size:7.2px;font-weight:950;letter-spacing:.1em;margin:1.5mm 0}
+.backGrid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:1.5mm 4mm;padding:0 1mm}
+.backGrid b{display:block;font-size:5px;line-height:1.2;margin-top:.6mm;color:#2b3e53}
+.cardNotice{position:relative;z-index:2;margin-top:1.8mm;padding:1.5mm 2mm;border-left:1mm solid #d4af37;background:rgba(255,255,255,.72);font-size:5px;line-height:1.45;color:#58697d}
+.backSignatures{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:7mm;display:flex;justify-content:space-between;align-items:end;gap:8mm}
 .backSignatures>div{flex:1}
 .backSignatures span{display:block;font-size:4px;color:#7a8797;margin-bottom:1.5mm}
 .backSignatures i{display:block;height:5mm;border-bottom:1px solid #9ca9b7}
 .backSignatures b{display:block;font-size:6px;color:#103b64;border-bottom:1px solid #9ca9b7;padding-bottom:1.2mm}
-.backFooter{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:3mm;display:flex;justify-content:space-between;font-size:3.7px;letter-spacing:.08em;color:#788697}
+.backFooter{position:absolute;z-index:3;left:4.5mm;right:4.5mm;bottom:2.5mm;display:flex;justify-content:space-between;font-size:3.7px;letter-spacing:.08em;color:#788697}
 .backFooter b{color:#103b64}
 @media(max-width:900px){
  .studentCardSheet{grid-template-columns:85.6mm}
