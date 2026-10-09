@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {schoolSupabase as supabase} from "../lib/supabase";
-import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare,CheckCircle,AlertTriangle,CreditCard as CreditCardIcon} from "lucide-react";
+import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare,CheckCircle,AlertTriangle,CreditCard as CreditCardIcon,Boxes} from "lucide-react";
 
 type P={id:string;school_id:string;full_name:string|null;role_id:string|null;active:boolean;permission_overrides?:Record<string,boolean>;roles?:{name:string;label:string}|null};
 const money=(n:number,currency="FC")=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(n)+" "+(currency==="USD"?"$":"FC");
@@ -65,10 +65,11 @@ export default function Home(){
   ["finance","Finances",Wallet,can("finance","promoteur","directeur","finance","comptable")],
   ["studentFinance","Situation financière des élèves",Wallet,can("studentFinance","promoteur","directeur","finance","comptable")],
   ["staff","Personnel",UserCog,can("staff","promoteur","directeur","administrateur")],
+  ["inventory","Stocks et matériel",Boxes,can("inventory","promoteur","administrateur","logisticien","secretaire")],
   ["announcements","Communications",MessageSquare,can("announcements","promoteur","directeur","etudes","secretaire")],
   ["settings","Paramètres",Settings,can("settings","promoteur")],["audit","Journal d’activité",ClipboardList,can("audit","promoteur","directeur","finance")]
  ];
- return <div className="app" style={{"--school-primary":school?.primary_color||"#103b64","--school-secondary":school?.secondary_color||"#d4af37"} as React.CSSProperties}><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]&&(enabledModules===null||enabledModules[n[0]]!==false)).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school} role={role}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="assignments"&&<TeacherAssignments profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="discipline"&&<Discipline profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<><Finance profile={profile} can={can}/><FeeTracking profile={profile}/><FeeInstallmentManager profile={profile} can={can}/></>} {page==="studentFinance"&&<StudentFinance profile={profile} can={can}/>} {page==="staff"&&<Staff profile={profile}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>} {page==="audit"&&<AuditLog profile={profile}/>}</section></main></div>;
+ return <div className="app" style={{"--school-primary":school?.primary_color||"#103b64","--school-secondary":school?.secondary_color||"#d4af37"} as React.CSSProperties}><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]&&(enabledModules===null||enabledModules[n[0]]!==false)).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school} role={role}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="assignments"&&<TeacherAssignments profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="discipline"&&<Discipline profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<><Finance profile={profile} can={can}/><FeeTracking profile={profile}/><FeeInstallmentManager profile={profile} can={can}/></>} {page==="studentFinance"&&<StudentFinance profile={profile} can={can}/>} {page==="staff"&&<Staff profile={profile}/>} {page==="inventory"&&<Inventory profile={profile} can={can}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>} {page==="audit"&&<AuditLog profile={profile}/>}</section></main></div>;
 }
 
 function SoftwareLanding(){
@@ -719,3 +720,81 @@ function SettingsPage({school,profile,reload}:any){
 }
 
 // Rebuild trigger: verify Vercel uses the corrected main branch commit.
+
+
+function Inventory({profile,can}:any){
+ const [items,setItems]=useState<any[]>([]),[moves,setMoves]=useState<any[]>([]),[query,setQuery]=useState(""),[tab,setTab]=useState("items"),[show,setShow]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+ const [form,setForm]=useState<any>({name:"",category:"Général",item_type:"consumable",sku:"",unit:"pièce",quantity:"0",min_quantity:"0",unit_cost:"0",storage_location:"",condition_status:"good",notes:""});
+ const [movement,setMovement]=useState<any>({item_id:"",movement_type:"in",quantity:"1",reason:"Réapprovisionnement",reference:"",recipient:""});
+ const editable=can("inventory","promoteur","administrateur","logisticien");
+ async function load(){
+  const [a,b]=await Promise.all([
+   supabase.from("inventory_items").select("*").eq("school_id",profile.school_id).order("name"),
+   supabase.from("inventory_movements").select("id,item_id,movement_type,quantity,reason,reference,recipient,created_at,inventory_items(name,unit),profiles:performed_by(full_name)").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100)
+  ]);
+  if(a.error||b.error){setMsg((a.error||b.error)?.message||"Impossible de charger les stocks.");return}
+  setItems(a.data||[]);setMoves(b.data||[]);
+  if(!movement.item_id&&a.data?.[0])setMovement((m:any)=>({...m,item_id:a.data[0].id}));
+ }
+ useEffect(()=>{load()},[profile.school_id]);
+ const filtered=items.filter(x=>(x.name+" "+x.category+" "+(x.sku||"")+" "+(x.storage_location||"")).toLowerCase().includes(query.toLowerCase()));
+ const low=items.filter(x=>Number(x.quantity)<=Number(x.min_quantity)).length;
+ const totalValue=items.reduce((n,x)=>n+Number(x.quantity||0)*Number(x.unit_cost||0),0);
+ async function saveItem(e:React.FormEvent){
+  e.preventDefault();if(!editable)return;setBusy(true);setMsg("");
+  const payload={school_id:profile.school_id,name:form.name.trim(),category:form.category||"Général",item_type:form.item_type,sku:form.sku.trim()||null,unit:form.unit||"pièce",quantity:Number(form.quantity||0),min_quantity:Number(form.min_quantity||0),unit_cost:Number(form.unit_cost||0),storage_location:form.storage_location.trim()||null,condition_status:form.condition_status,notes:form.notes.trim()||null,created_by:profile.id};
+  const {data,error}=await supabase.from("inventory_items").insert(payload).select().single();
+  if(error)setMsg(error.message);else{setMsg("Article enregistré.");setShow(false);setForm({name:"",category:"Général",item_type:"consumable",sku:"",unit:"pièce",quantity:"0",min_quantity:"0",unit_cost:"0",storage_location:"",condition_status:"good",notes:""});if(Number(payload.quantity)>0){await supabase.from("inventory_movements").insert({school_id:profile.school_id,item_id:data.id,movement_type:"in",quantity:Number(payload.quantity),reason:"Stock initial",performed_by:profile.id})}await load()}
+  setBusy(false);
+ }
+ async function saveMovement(e:React.FormEvent){
+  e.preventDefault();if(!editable)return;setBusy(true);setMsg("");
+  const item=items.find(x=>x.id===movement.item_id),qty=Number(movement.quantity);
+  if(!item||!Number.isFinite(qty)||qty<=0){setMsg("Choisissez un article et une quantité valide.");setBusy(false);return}
+  const next=movement.movement_type==="in"?Number(item.quantity)+qty:movement.movement_type==="out"?Number(item.quantity)-qty:qty;
+  if(next<0){setMsg("Stock insuffisant : la sortie dépasse la quantité disponible.");setBusy(false);return}
+  const {error:me}=await supabase.from("inventory_movements").insert({school_id:profile.school_id,item_id:item.id,movement_type:movement.movement_type,quantity:qty,reason:movement.reason.trim(),reference:movement.reference.trim()||null,recipient:movement.recipient.trim()||null,performed_by:profile.id});
+  if(me){setMsg(me.message);setBusy(false);return}
+  const {error:ie}=await supabase.from("inventory_items").update({quantity:next,updated_at:new Date().toISOString()}).eq("id",item.id).eq("school_id",profile.school_id);
+  if(ie)setMsg("Le mouvement est enregistré, mais la quantité n’a pas été actualisée. Rechargez et contactez l’administrateur : "+ie.message);
+  else{setMsg("Mouvement enregistré.");setMovement((m:any)=>({...m,quantity:"1",reason:"",reference:"",recipient:""}));await load()}
+  setBusy(false);
+ }
+ return <>
+  <div className="head"><div><h1>Stocks et matériel</h1><p>Inventaire des fournitures et équipements, entrées, sorties et alertes de stock.</p></div>{editable&&<button className="btn" onClick={()=>{setShow(!show);setTab("items")}}><Plus size={17}/>{show?"Fermer":"Nouvel article"}</button>}</div>
+  <div className="cards">
+   <div className="stat"><div className="icon"><Boxes size={20}/></div><small>Références en stock</small><b>{items.length}</b></div>
+   <div className="stat"><div className="icon"><AlertTriangle size={20}/></div><small>Alertes de stock bas</small><b>{low}</b></div>
+   <div className="stat"><div className="icon"><Wallet size={20}/></div><small>Valeur indicative du stock</small><b>{money(totalValue,"FC")}</b></div>
+   <div className="stat"><div className="icon"><ClipboardList size={20}/></div><small>Mouvements récents</small><b>{moves.length}</b></div>
+  </div>
+  <div className="tabs" style={{marginTop:16}}><button className={"tab "+(tab==="items"?"active":"")} onClick={()=>{setTab("items");setShow(false)}}>Articles et équipements</button><button className={"tab "+(tab==="movements"?"active":"")} onClick={()=>{setTab("movements");setShow(false)}}>Entrées / sorties</button>{editable&&<button className={"tab "+(tab==="newmove"?"active":"")} onClick={()=>{setTab("newmove");setShow(false)}}>Enregistrer un mouvement</button>}</div>
+  {msg&&<div className="notice" style={{marginBottom:12}}>{msg}</div>}
+  {show&&editable&&<form className="panel formGrid" onSubmit={saveItem}>
+   <label>Nom de l’article / équipement<input required maxLength={140} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
+   <label>Catégorie<input required value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="Papeterie, informatique…"/></label>
+   <label>Type<select value={form.item_type} onChange={e=>setForm({...form,item_type:e.target.value})}><option value="consumable">Fourniture consommable</option><option value="equipment">Matériel durable</option></select></label>
+   <label>Référence / code<input value={form.sku} onChange={e=>setForm({...form,sku:e.target.value})}/></label>
+   <label>Unité<input value={form.unit} onChange={e=>setForm({...form,unit:e.target.value})} placeholder="pièce, boîte, ramette…"/></label>
+   <label>Quantité initiale<input required type="number" min="0" step="0.01" value={form.quantity} onChange={e=>setForm({...form,quantity:e.target.value})}/></label>
+   <label>Seuil d’alerte<input required type="number" min="0" step="0.01" value={form.min_quantity} onChange={e=>setForm({...form,min_quantity:e.target.value})}/></label>
+   <label>Coût unitaire (FC)<input type="number" min="0" step="0.01" value={form.unit_cost} onChange={e=>setForm({...form,unit_cost:e.target.value})}/></label>
+   <label>Lieu de rangement<input value={form.storage_location} onChange={e=>setForm({...form,storage_location:e.target.value})}/></label>
+   <label>État<select value={form.condition_status} onChange={e=>setForm({...form,condition_status:e.target.value})}><option value="good">Bon état</option><option value="worn">Usé</option><option value="damaged">Endommagé</option><option value="out_of_service">Hors service</option></select></label>
+   <label style={{gridColumn:"1/-1"}}>Observations<textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></label>
+   <button className="btn" disabled={busy}><Save size={16}/>Enregistrer l’article</button>
+  </form>}
+  {tab==="newmove"&&editable&&<form className="panel formGrid" onSubmit={saveMovement}>
+   <label>Article<select required value={movement.item_id} onChange={e=>setMovement({...movement,item_id:e.target.value})}><option value="">Choisir…</option>{items.map(x=><option key={x.id} value={x.id}>{x.name} — disponible : {x.quantity} {x.unit}</option>)}</select></label>
+   <label>Opération<select value={movement.movement_type} onChange={e=>setMovement({...movement,movement_type:e.target.value})}><option value="in">Entrée / réapprovisionnement</option><option value="out">Sortie / attribution</option><option value="adjustment">Ajustement d’inventaire</option></select></label>
+   <label>Quantité<input required type="number" min="0.01" step="0.01" value={movement.quantity} onChange={e=>setMovement({...movement,quantity:e.target.value})}/></label>
+   <label>Motif<input required value={movement.reason} onChange={e=>setMovement({...movement,reason:e.target.value})} placeholder="Achat, distribution, réparation…"/></label>
+   <label>Référence / bon<input value={movement.reference} onChange={e=>setMovement({...movement,reference:e.target.value})}/></label>
+   <label>Bénéficiaire / service<input value={movement.recipient} onChange={e=>setMovement({...movement,recipient:e.target.value})} placeholder="Classe, service, employé…"/></label>
+   <button className="btn" disabled={busy}><Save size={16}/>Valider le mouvement</button>
+  </form>}
+  {tab==="items"&&<div className="panel"><div className="toolbar"><div className="miniSearch"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Rechercher un article, une catégorie…"/></div></div><div className="tableWrap"><table><thead><tr><th>Article</th><th>Catégorie</th><th>Type</th><th>Quantité</th><th>Seuil</th><th>Lieu</th><th>État</th></tr></thead><tbody>{filtered.map(x=><tr key={x.id}><td><b>{x.name}</b><br/><small>{x.sku||"Sans référence"} · {x.unit}</small></td><td>{x.category}</td><td>{x.item_type==="equipment"?"Équipement":"Consommable"}</td><td><b>{x.quantity}</b></td><td>{x.min_quantity}</td><td>{x.storage_location||"—"}</td><td>{x.condition_status==="good"?"Bon état":x.condition_status==="worn"?"Usé":x.condition_status==="damaged"?"Endommagé":"Hors service"}{Number(x.quantity)<=Number(x.min_quantity)&&<div style={{color:"#b45309",fontSize:12,fontWeight:700}}>Stock bas</div>}</td></tr>)}{!filtered.length&&<tr><td colSpan={7} className="empty">Aucun article enregistré.</td></tr>}</tbody></table></div></div>}
+  {tab==="movements"&&<div className="panel tableWrap"><table><thead><tr><th>Date</th><th>Article</th><th>Opération</th><th>Quantité</th><th>Motif</th><th>Référence</th><th>Bénéficiaire</th></tr></thead><tbody>{moves.map(x=><tr key={x.id}><td>{new Date(x.created_at).toLocaleString("fr-FR")}</td><td>{x.inventory_items?.name||"Article"}</td><td>{x.movement_type==="in"?"Entrée":x.movement_type==="out"?"Sortie":"Ajustement"}</td><td>{x.quantity} {x.inventory_items?.unit||""}</td><td>{x.reason}</td><td>{x.reference||"—"}</td><td>{x.recipient||"—"}</td></tr>)}{!moves.length&&<tr><td colSpan={7} className="empty">Aucun mouvement enregistré.</td></tr>}</tbody></table></div>}
+  {!editable&&<p className="notice" style={{marginTop:12}}>Mode consultation : vous pouvez consulter les stocks et l’historique, mais seul le logisticien ou une personne autorisée peut modifier les données.</p>}
+ </>;
+}
