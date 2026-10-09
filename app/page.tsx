@@ -752,13 +752,9 @@ function Inventory({profile,can}:any){
   e.preventDefault();if(!editable)return;setBusy(true);setMsg("");
   const item=items.find(x=>x.id===movement.item_id),qty=Number(movement.quantity);
   if(!item||!Number.isFinite(qty)||qty<=0){setMsg("Choisissez un article et une quantité valide.");setBusy(false);return}
-  const next=movement.movement_type==="in"?Number(item.quantity)+qty:movement.movement_type==="out"?Number(item.quantity)-qty:qty;
-  if(next<0){setMsg("Stock insuffisant : la sortie dépasse la quantité disponible.");setBusy(false);return}
-  const {error:me}=await supabase.from("inventory_movements").insert({school_id:profile.school_id,item_id:item.id,movement_type:movement.movement_type,quantity:qty,reason:movement.reason.trim(),reference:movement.reference.trim()||null,recipient:movement.recipient.trim()||null,performed_by:profile.id});
+  const {error:me}=await supabase.rpc("record_inventory_movement",{p_item_id:item.id,p_movement_type:movement.movement_type,p_quantity:qty,p_reason:movement.reason.trim(),p_reference:movement.reference.trim()||null,p_recipient:movement.recipient.trim()||null});
   if(me){setMsg(me.message);setBusy(false);return}
-  const {error:ie}=await supabase.from("inventory_items").update({quantity:next,updated_at:new Date().toISOString()}).eq("id",item.id).eq("school_id",profile.school_id);
-  if(ie)setMsg("Le mouvement est enregistré, mais la quantité n’a pas été actualisée. Rechargez et contactez l’administrateur : "+ie.message);
-  else{setMsg("Mouvement enregistré.");setMovement((m:any)=>({...m,quantity:"1",reason:"",reference:"",recipient:""}));await load()}
+  setMsg("Mouvement enregistré.");setMovement((m:any)=>({...m,quantity:"1",reason:"",reference:"",recipient:""}));await load();
   setBusy(false);
  }
  return <>
