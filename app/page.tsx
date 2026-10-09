@@ -730,7 +730,7 @@ function Inventory({profile,can}:any){
  async function load(){
   const [a,b]=await Promise.all([
    supabase.from("inventory_items").select("*").eq("school_id",profile.school_id).order("name"),
-   supabase.from("inventory_movements").select("id,item_id,movement_type,quantity,reason,reference,recipient,created_at,inventory_items(name,unit),profiles:performed_by(full_name)").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100)
+   supabase.from("inventory_movements").select("id,item_id,movement_type,quantity,reason,reference,recipient,created_at,inventory_items(name,unit)").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(100)
   ]);
   if(a.error||b.error){setMsg((a.error||b.error)?.message||"Impossible de charger les stocks.");return}
   setItems(a.data||[]);setMoves(b.data||[]);
