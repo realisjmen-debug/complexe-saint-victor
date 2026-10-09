@@ -3,7 +3,7 @@
 import {useEffect,useState} from "react";
 import {supabase} from "../../lib/supabase";
 import "./platform.css";
-import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw,UserPlus,X,Copy,Layers,PlusCircle} from "lucide-react";
+import {Building2,Plus,Power,ExternalLink,ShieldCheck,RefreshCw,UserPlus,X,Copy,Layers,PlusCircle,Search,CheckCircle2,PauseCircle} from "lucide-react";
 
 type School={id:string;name:string;slug:string;status:string;city:string|null;phone:string|null;created_at:string};
 type Plan={id:string;name:string;label:string;price_monthly:number;price_yearly:number};
@@ -15,6 +15,9 @@ export default function PlatformPage(){
  const [adminSchool,setAdminSchool]=useState<School|null>(null),[admin,setAdmin]=useState({full_name:"",email:"",phone:"",password:""});
  const [modules,setModules]=useState<Module[]>([]),[selectedSchoolId,setSelectedSchoolId]=useState(""),[schoolModules,setSchoolModules]=useState<Record<string,boolean>>({}),[moduleBusy,setModuleBusy]=useState(false);
  const [newModule,setNewModule]=useState({name:"",key:"",category:"Autres",description:""});
+ const [schoolQuery,setSchoolQuery]=useState(""),[schoolStatusFilter,setSchoolStatusFilter]=useState("all");
+ const filteredSchools=schools.filter(s=>(s.name+" "+s.slug+" "+(s.city||"")).toLowerCase().includes(schoolQuery.toLowerCase())&&(schoolStatusFilter==="all"||s.status===schoolStatusFilter));
+ const activeSchools=schools.filter(s=>s.status==="active").length; const suspendedSchools=schools.filter(s=>s.status==="suspended").length;
  async function load(){
    setLoading(true);
    const {data:u}=await supabase.auth.getUser();
@@ -93,6 +96,12 @@ export default function PlatformPage(){
  return <div className="platform">
    <div className="platformTop"><div><span className="eyebrow">MONATSHIEBE LOGICIEL</span><h1>Administration de la plateforme</h1><p>Gérez plusieurs établissements depuis une seule plateforme.</p></div><button className="btn light" onClick={load}><RefreshCw size={17}/> Actualiser</button></div>
    {msg&&<div className="notice">{msg}</div>}
+   <section className="platformStats" aria-label="Indicateurs de la plateforme">
+    <div className="statCard"><Building2/><span>Établissements enregistrés</span><strong>{schools.length}</strong></div>
+    <div className="statCard"><CheckCircle2/><span>Écoles actives</span><strong>{activeSchools}</strong></div>
+    <div className="statCard"><PauseCircle/><span>Écoles suspendues</span><strong>{suspendedSchools}</strong></div>
+    <div className="statCard"><Layers/><span>Modules au catalogue</span><strong>{modules.length}</strong></div>
+   </section>
    <div className="platformGrid">
     <form className="panel createForm" onSubmit={createSchool}>
       <div className="sectionTitle"><Building2/><div><h3>Nouvelle école</h3><p>Création sans modifier le code.</p></div></div>
@@ -102,8 +111,9 @@ export default function PlatformPage(){
       <label>Plan initial<select value={plan} onChange={e=>setPlan(e.target.value)}>{plans.map(p=><option key={p.id} value={p.id}>{p.label} — $ {p.price_monthly}/mois</option>)}</select></label>
       <button className="btn full" disabled={busy}><Plus size={17}/>{busy?"Création…":"Créer l'école"}</button>
     </form>
-    <div className="panel"><div className="sectionTitle"><Building2/><div><h3>Écoles enregistrées</h3><p>{schools.length} établissement(s)</p></div></div>
-      <div className="schoolList">{schools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><div className="schoolLinks"><div><small>Connexion école</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}</code></div><div><small>Espace parent</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}/parent</code></div><div><small>Portail enseignant</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}/enseignant</code></div></div><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" title="Copier le lien école" onClick={()=>{navigator.clipboard?.writeText(window.location.origin+"/ecole/"+s.slug);setMsg("Lien de connexion école copié.")}}><Copy size={17}/></button><button className="iconBtn" title="Copier le lien parent" onClick={()=>{navigator.clipboard?.writeText(window.location.origin+"/ecole/"+s.slug+"/parent");setMsg("Lien espace parent copié.")}}><Copy size={17}/></button><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/ecole/"+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
+    <div className="panel"><div className="sectionTitle"><Building2/><div><h3>Écoles enregistrées</h3><p>{filteredSchools.length} résultat(s) sur {schools.length} établissement(s)</p></div></div>
+      <div className="schoolFilters"><label><Search size={16}/><input value={schoolQuery} onChange={e=>setSchoolQuery(e.target.value)} placeholder="Rechercher par école, identifiant ou ville"/></label><select aria-label="Filtrer par statut" value={schoolStatusFilter} onChange={e=>setSchoolStatusFilter(e.target.value)}><option value="all">Tous les statuts</option><option value="active">Actives</option><option value="suspended">Suspendues</option><option value="pending">En attente</option></select></div>
+      <div className="schoolList">{filteredSchools.map(s=><div className="schoolRow" key={s.id}><div><b>{s.name}</b><small>{s.slug} • {s.city||"—"}</small><div className="schoolLinks"><div><small>Connexion école</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}</code></div><div><small>Espace parent</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}/parent</code></div><div><small>Portail enseignant</small><code>{typeof window!=="undefined"?window.location.origin:""}/ecole/{s.slug}/enseignant</code></div></div><span className={s.status==="suspended"?"status off":"status"}>{s.status}</span></div><div className="rowActions"><button className="iconBtn" title="Copier le lien école" onClick={()=>{navigator.clipboard?.writeText(window.location.origin+"/ecole/"+s.slug);setMsg("Lien de connexion école copié.")}}><Copy size={17}/></button><button className="iconBtn" title="Copier le lien parent" onClick={()=>{navigator.clipboard?.writeText(window.location.origin+"/ecole/"+s.slug+"/parent");setMsg("Lien espace parent copié.")}}><Copy size={17}/></button><button className="iconBtn" onClick={()=>{setAdminSchool(s);setMsg("")}} title="Créer l’administrateur"><UserPlus size={17}/></button><a className="iconBtn" href={"/ecole/"+encodeURIComponent(s.slug)} title="Ouvrir"><ExternalLink size={17}/></a><button className="iconBtn" onClick={()=>toggle(s)} title={s.status==="suspended"?"Activer":"Suspendre"}><Power size={17}/></button></div></div>)}</div>
     </div>
    </div>
 
