@@ -19,7 +19,7 @@ export default function StudentStaffModules({profile,can,activeModule}:{profile:
 const [active,setActive]=useState<Key>(activeModule as Key),[rows,setRows]=useState<any[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState(""),[q,setQ]=useState(""),[formOpen,setFormOpen]=useState(false),[form,setForm]=useState<Record<string,string>>({}),[saving,setSaving]=useState(false),[loanRows,setLoanRows]=useState<any[]>([]);
 useEffect(()=>{if(configs.some(c=>c.key===activeModule))setActive(activeModule as Key)},[activeModule]);
 const cfg=configs.find(c=>c.key===active)!;
-const editable=can(active,"promoteur","directeur","administrateur")||can("staff","promoteur","directeur","administrateur")||can("library","promoteur","directeur","administrateur","bibliothecaire");
+const role=profile.roles?.name||"";const editable=role==="promoteur"?active==="staff_payroll":(can(active,"directeur","administrateur")||can("staff","directeur","administrateur")||(active==="library"&&can("library","bibliothecaire")));
 const load=useCallback(async()=>{setLoading(true);setError("");const {data,error}=await supabase.from(cfg.table).select("*").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(300);if(error)setError(error.message);setRows(data||[]);if(active==="library"){const {data:loans}=await supabase.from("library_loans").select("*").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(200);setLoanRows(loans||[])}setLoading(false)},[cfg,profile.school_id,active]);
 useEffect(()=>{void load()},[load]);
 const filtered=useMemo(()=>rows.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase())),[rows,q]);
