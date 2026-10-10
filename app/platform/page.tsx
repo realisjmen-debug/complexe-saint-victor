@@ -13,7 +13,7 @@ type SchoolModule={module_key:string;enabled:boolean};
 function uniqueModuleRows(rows:Module[]):Module[]{
  const byName=new Map<string,Module>();
  for(const m of rows){
-  const key=m.name.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  const key=m.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
   const previous=byName.get(key);
   const rank=(x:Module)=>x.implementation_status==="available"?3:x.implementation_status==="in_development"?2:1;
   if(!previous||rank(m)>rank(previous))byName.set(key,m);
