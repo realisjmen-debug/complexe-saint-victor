@@ -139,11 +139,11 @@ function Dashboard({profile,school,role}:any){
      supabase.from("attendance").select("id",{count:"exact",head:true}).eq("school_id",id).eq("attendance_date",date).eq("status","absent"),
      supabase.from("payments").select("amount,currency").eq("school_id",id).eq("status","validated").gte("paid_at",start).lte("paid_at",finish),
      supabase.from("expenses").select("amount,currency").eq("school_id",id).eq("status","validated").gte("paid_at",start).lte("paid_at",finish),
-     supabase.from("staff_payroll_items").select("net_salary,status,payment_date").eq("school_id",id).eq("payment_date",date).in("status",["paid","validated"])
+     supabase.from("staff_payroll_items").select("net_salary,status,payment_date,staff_payroll_runs!inner(currency)").eq("school_id",id).eq("payment_date",date).in("status",["paid","validated"])
    ]);
    const sum=(rows:any[],currency:string,key="amount")=>(rows||[]).filter((x:any)=>currency==="USD"?x.currency==="USD":x.currency!=="USD").reduce((a:number,x:any)=>a+Number(x[key]||0),0);
    setC({students:s.count||0,teachers:t.count||0,classes:k.count||0,fcIncome:sum(p.data||[],"FC"),usdIncome:sum(p.data||[],"USD"),fcExpenses:sum(e.data||[],"FC"),usdExpenses:sum(e.data||[],"USD")});
-   setDaily({enrollments:en.count||0,present:pr.count||0,absent:ab.count||0,fcIncome:sum(dp.data||[],"FC"),usdIncome:sum(dp.data||[],"USD"),fcExpenses:sum(de.data||[],"FC"),usdExpenses:sum(de.data||[],"USD"),payrollFC:sum(pa.data||[],"FC","net_salary"),payrollUSD:sum(pa.data||[],"USD","net_salary")});
+   setDaily({enrollments:en.count||0,present:pr.count||0,absent:ab.count||0,fcIncome:sum(dp.data||[],"FC"),usdIncome:sum(dp.data||[],"USD"),fcExpenses:sum(de.data||[],"FC"),usdExpenses:sum(de.data||[],"USD"),payrollFC:(pa.data||[]).filter((x:any)=>x.staff_payroll_runs?.currency!=="USD").reduce((a:number,x:any)=>a+Number(x.net_salary||0),0),payrollUSD:(pa.data||[]).filter((x:any)=>x.staff_payroll_runs?.currency==="USD").reduce((a:number,x:any)=>a+Number(x.net_salary||0),0)});
    setYear(y.data?.name||"Année scolaire");setLoaded(true);
  })()},[profile.school_id]);
  const financialRoles=["promoteur","directeur","finance","comptable"].includes(role);
