@@ -4,6 +4,7 @@ import {schoolSupabase as supabase} from "../lib/supabase";
 import LogisticsConsole from "../components/LogisticsConsole";
 import StudentStaffModules from "../components/StudentStaffModules";
 import SchoolOperationsModules from "../components/SchoolOperationsModules";
+import StaffRegistry from "../components/StaffRegistry";
 import {LayoutDashboard,Users,GraduationCap,Wallet,Settings,LogOut,Menu,X,Search,Plus,Printer,ShieldCheck,BookOpen,UserCog,Receipt,UserRound,School,Save,ClipboardList,CalendarCheck,BarChart3,HeartHandshake,FileText,MessageSquare,CheckCircle,AlertTriangle,CreditCard as CreditCardIcon,Boxes} from "lucide-react";
 
 type P={id:string;school_id:string;full_name:string|null;role_id:string|null;active:boolean;permission_overrides?:Record<string,boolean>;roles?:{name:string;label:string}|null};
@@ -53,31 +54,33 @@ export default function Home(){
  const suspended=subscription && !["trial","active"].includes(subscription.status);
  if(suspended||expired)return <div className="center"><ShieldCheck size={42}/><h2>Accès à l’établissement suspendu</h2><p>L’abonnement de <b>{school?.name}</b> est {expired?"arrivé à expiration":"actuellement "+subscription.status}. Contactez le Super Administrateur pour réactiver l’accès.</p><button className="btn" onClick={logout}>Se déconnecter</button></div>;
  const can=(feature:string,...allowedRoles:string[])=>{const ov=profile.permission_overrides||{};if(role==="promoteur"){if(feature==="staff"||feature==="announcements"||feature==="staff_payroll")return true;return false}if(Object.prototype.hasOwnProperty.call(ov,feature))return ov[feature]===true;return allowedRoles.includes(role)};
+ const canView=(feature:string)=>role==="promoteur"||can(feature,"directeur","administrateur","secretaire","discipline","surveillant","etudes","finance","comptable","rh","logisticien","bibliothecaire","transport","gestionnaire","cantine","internat");
  const nav:any[]=[
   ["dashboard","Tableau de bord",LayoutDashboard,!["discipline","surveillant","enseignant"].includes(role)],
-  ["students","Élèves",Users,can("students","promoteur","directeur","administrateur","secretaire","discipline","surveillant")],
-  ["parents","Parents",HeartHandshake,can("parents","promoteur","directeur","administrateur","secretaire","discipline","surveillant")],
-  ["enrollments","Inscriptions",ClipboardList,can("enrollments","promoteur","directeur","secretaire")],
-  ["studies","Études",GraduationCap,can("studies","promoteur","directeur","etudes")],
-  ["assignments","Affectations enseignants",UserCog,can("assignments","promoteur","directeur","etudes")],
-  ["attendance","Présences",CalendarCheck,can("attendance","promoteur","directeur","discipline")],
-  ["discipline","Discipline",ShieldCheck,can("discipline","promoteur","directeur","discipline","surveillant")],
-  ["schedule","Emploi du temps",CalendarCheck,can("schedule","promoteur","directeur","etudes","secretaire","discipline","surveillant")],
-  ["grades","Notes & évaluations",BarChart3,can("grades","promoteur","directeur","etudes")],
-  ["reportcards","Relevés de cote",FileText,can("reportcards","promoteur","directeur","etudes","secretaire")],
-  ["finance","Finances",Wallet,can("finance","promoteur","directeur","finance","comptable")],
-  ["studentFinance","Situation financière des élèves",Wallet,can("studentFinance","promoteur","directeur","finance","comptable")],
-  ["staff","Personnel",UserCog,can("staff","promoteur","directeur","administrateur")],
-  ["inventory","Stocks et matériel",Boxes,can("inventory","promoteur","administrateur","logisticien","secretaire")],
-  ["sms_notifications","Notifications aux parents",MessageSquare,can("sms_notifications","promoteur","directeur","administrateur","secretaire","finance")],
-  ["school_transport","Transport scolaire",Boxes,can("school_transport","promoteur","directeur","administrateur","logisticien","secretaire")],
-  ["staff_attendance","Présences & congés du personnel",CalendarCheck,can("staff_attendance","promoteur","directeur","administrateur","rh")],
-  ["staff_payroll","Salaires & paiements du personnel",Wallet,can("staff_payroll","promoteur","directeur","administrateur","finance","comptable")],
-  ["library","Bibliothèque & emprunts",BookOpen,can("library","promoteur","directeur","administrateur","bibliothecaire","secretaire")],
-  ["announcements","Communications",MessageSquare,can("announcements","promoteur","directeur","etudes","secretaire")],
-  ["settings","Paramètres",Settings,can("settings","promoteur")],["audit","Journal d’activité",ClipboardList,can("audit","promoteur","directeur","finance")]
+  ["students","Élèves",Users,canView("students")],
+  ["parents","Parents",HeartHandshake,canView("parents")],
+  ["enrollments","Inscriptions",ClipboardList,canView("enrollments")],
+  ["studies","Études",GraduationCap,canView("studies")],
+  ["assignments","Affectations enseignants",UserCog,canView("assignments")],
+  ["attendance","Présences",CalendarCheck,canView("attendance")],
+  ["discipline","Discipline",ShieldCheck,canView("discipline")],
+  ["schedule","Emploi du temps",CalendarCheck,canView("schedule")],
+  ["grades","Notes & évaluations",BarChart3,canView("grades")],
+  ["reportcards","Relevés de cote",FileText,canView("reportcards")],
+  ["finance","Finances",Wallet,canView("finance")],
+  ["studentFinance","Situation financière des élèves",Wallet,canView("studentFinance")],
+  ["staff","Accès applicatifs",UserCog,canView("staff")],
+  ["staff_registry","Engagements du personnel",Users,canView("staff")],
+  ["inventory","Stocks et matériel",Boxes,canView("inventory")],
+  ["sms_notifications","Notifications aux parents",MessageSquare,canView("sms_notifications")],
+  ["school_transport","Transport scolaire",Boxes,canView("school_transport")],
+  ["staff_attendance","Présences & congés du personnel",CalendarCheck,canView("staff_attendance")],
+  ["staff_payroll","Salaires & paiements du personnel",Wallet,canView("staff_payroll")],
+  ["library","Bibliothèque & emprunts",BookOpen,canView("library")],
+  ["announcements","Communications",MessageSquare,canView("announcements")],
+  ["settings","Paramètres",Settings,canView("settings")],["audit","Journal d’activité",ClipboardList,canView("audit")]
  ];
- return <div className="app" style={{"--school-primary":school?.primary_color||"#103b64","--school-secondary":school?.secondary_color||"#d4af37"} as React.CSSProperties}><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]&&(!["student_portal","school_canteen","boarding_dormitory","extracurricular","electronic_payments","excel_import_export"].includes(n[0]))&&(role!=="promoteur"||["dashboard","staff","announcements"].includes(n[0]))&&(enabledModules===null||enabledModules[n[0]]!==false)).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school} role={role}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="assignments"&&<TeacherAssignments profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="discipline"&&<Discipline profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<><Finance profile={profile} can={can}/><FeeTracking profile={profile}/><FeeInstallmentManager profile={profile} can={can}/></>} {page==="studentFinance"&&<StudentFinance profile={profile} can={can}/>} {page==="staff"&&<Staff profile={profile} school={school} onPayroll={()=>setPage("staff_payroll")}/>} {page==="inventory"&&<LogisticsConsole profile={profile} can={can}/>} {["student_portal","staff_attendance","staff_payroll","library","extracurricular"].includes(page)&&<StudentStaffModules profile={profile} can={can} activeModule={page}/>} {["sms_notifications","school_transport","school_canteen","boarding_dormitory"].includes(page)&&<SchoolOperationsModules profile={profile} can={can} activeModule={page}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>} {page==="audit"&&<AuditLog profile={profile}/>}</section></main></div>;
+ return <div className="app" style={{"--school-primary":school?.primary_color||"#103b64","--school-secondary":school?.secondary_color||"#d4af37"} as React.CSSProperties}><aside className={mobile?"side open":"side"}><div className="brand"><div className="logo">{school?.logo_url?<img src={school.logo_url} alt=""/>:"SV"}</div><div><b>{school?.name||"COMPLEXE SCOLAIRE SAINT VICTOR"}</b><small>Savoir • Discipline • Réussite</small></div><button className="close" onClick={()=>setMobile(false)}><X/></button></div><nav>{nav.filter(n=>n[3]&&(!["student_portal","school_canteen","boarding_dormitory","extracurricular","electronic_payments","excel_import_export"].includes(n[0]))&&(role!=="promoteur"||n[0]!=="settings")&&(role==="promoteur"||enabledModules===null||enabledModules[n[0]]!==false)).map(n=>{const I=n[2];return <button key={n[0]} className={page===n[0]?"navActive":""} onClick={()=>{setPage(n[0]);setMobile(false)}}><I size={19}/>{n[1]}</button>})}</nav><div className="sideBottom"><span>{profile.full_name||session.user.email}</span><small>{profile.roles?.label||role}</small><button className="logout" onClick={logout}><LogOut size={17}/> Déconnexion</button></div></aside><main className="main"><header className="top"><button className="menu" onClick={()=>setMobile(true)}><Menu/></button><div className="searchBox"><Search size={18}/><input placeholder="Rechercher dans l’établissement…"/></div><div className="topUser">{profile.roles?.label||role}</div></header><section className="content">{page==="dashboard"&&<Dashboard profile={profile} school={school} role={role}/>} {page==="students"&&<Students profile={profile} can={can}/>} {page==="parents"&&<Parents profile={profile} can={can}/>} {page==="enrollments"&&<Enrollments profile={profile} can={can}/>} {page==="studies"&&<Studies profile={profile} can={can}/>} {page==="assignments"&&<TeacherAssignments profile={profile} can={can}/>} {page==="attendance"&&<Attendance profile={profile} can={can}/>} {page==="discipline"&&<Discipline profile={profile} can={can}/>} {page==="schedule"&&<Schedule profile={profile} can={can}/>} {page==="grades"&&<Grades profile={profile} can={can}/>} {page==="reportcards"&&<ReportCards profile={profile} can={can}/>} {page==="finance"&&<><Finance profile={profile} can={can}/><FeeTracking profile={profile}/><FeeInstallmentManager profile={profile} can={can}/></>} {page==="studentFinance"&&<StudentFinance profile={profile} can={can}/>} {page==="staff"&&<Staff profile={profile} school={school} onPayroll={()=>setPage("staff_payroll")}/>}{page==="staff_registry"&&<StaffRegistry profile={profile}/>} {page==="inventory"&&<LogisticsConsole profile={profile} can={can}/>} {["student_portal","staff_attendance","staff_payroll","library","extracurricular"].includes(page)&&<StudentStaffModules profile={profile} can={can} activeModule={page}/>} {["sms_notifications","school_transport","school_canteen","boarding_dormitory"].includes(page)&&<SchoolOperationsModules profile={profile} can={can} activeModule={page}/>} {page==="announcements"&&<Announcements profile={profile} can={can}/>} {page==="settings"&&<SettingsPage school={school} profile={profile} reload={()=>loadSchool(profile.school_id)}/>} {page==="audit"&&<AuditLog profile={profile}/>}</section></main></div>;
 }
 
 function SoftwareLanding(){
@@ -117,70 +120,43 @@ function Stat({title,value,icon}:any){return <div className="stat"><div classNam
 
 function Dashboard({profile,school,role}:any){
  const [c,setC]=useState({students:0,teachers:0,classes:0,fcIncome:0,usdIncome:0,fcExpenses:0,usdExpenses:0});
+ const [daily,setDaily]=useState({enrollments:0,present:0,absent:0,fcIncome:0,usdIncome:0,fcExpenses:0,usdExpenses:0,payrollFC:0,payrollUSD:0});
  const [year,setYear]=useState("Année scolaire");
-
+ const [loaded,setLoaded]=useState(false);
  useEffect(()=>{(async()=>{
    const id=profile.school_id;
-   const [s,t,k,p,e,y]=await Promise.all([
-     supabase.from("students").select("*",{count:"exact",head:true}).eq("school_id",id),
-     supabase.from("teachers").select("*",{count:"exact",head:true}).eq("school_id",id),
-     supabase.from("classes").select("*",{count:"exact",head:true}).eq("school_id",id),
+   const d=new Date();const date=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+   const start=date+"T00:00:00";const finish=date+"T23:59:59.999";
+   const [s,t,k,p,e,y,en,pr,ab,dp,de,pa]=await Promise.all([
+     supabase.from("students").select("id",{count:"exact",head:true}).eq("school_id",id),
+     supabase.from("teachers").select("id",{count:"exact",head:true}).eq("school_id",id),
+     supabase.from("classes").select("id",{count:"exact",head:true}).eq("school_id",id),
      supabase.from("payments").select("amount,currency").eq("school_id",id).eq("status","validated"),
      supabase.from("expenses").select("amount,currency").eq("school_id",id).eq("status","validated"),
-     supabase.from("academic_years").select("name").eq("school_id",id).eq("is_current",true).maybeSingle()
+     supabase.from("academic_years").select("name").eq("school_id",id).eq("is_current",true).maybeSingle(),
+     supabase.from("enrollments").select("id",{count:"exact",head:true}).eq("school_id",id).gte("registered_at",start).lte("registered_at",finish),
+     supabase.from("attendance").select("id",{count:"exact",head:true}).eq("school_id",id).eq("attendance_date",date).eq("status","present"),
+     supabase.from("attendance").select("id",{count:"exact",head:true}).eq("school_id",id).eq("attendance_date",date).eq("status","absent"),
+     supabase.from("payments").select("amount,currency").eq("school_id",id).eq("status","validated").gte("paid_at",start).lte("paid_at",finish),
+     supabase.from("expenses").select("amount,currency").eq("school_id",id).eq("status","validated").gte("paid_at",start).lte("paid_at",finish),
+     supabase.from("staff_payroll_items").select("net_salary,status,payment_date").eq("school_id",id).eq("payment_date",date).in("status",["paid","validated"])
    ]);
-   setC({
-     students:s.count||0,
-     teachers:t.count||0,
-     classes:k.count||0,
-     fcIncome:(p.data||[]).filter((x:any)=>x.currency!=="USD").reduce((a:number,x:any)=>a+Number(x.amount||0),0),
-     usdIncome:(p.data||[]).filter((x:any)=>x.currency==="USD").reduce((a:number,x:any)=>a+Number(x.amount||0),0),
-     fcExpenses:(e.data||[]).filter((x:any)=>x.currency!=="USD").reduce((a:number,x:any)=>a+Number(x.amount||0),0),
-     usdExpenses:(e.data||[]).filter((x:any)=>x.currency==="USD").reduce((a:number,x:any)=>a+Number(x.amount||0),0)
-   });
-   setYear(y.data?.name||"Année scolaire");
+   const sum=(rows:any[],currency:string,key="amount")=>(rows||[]).filter((x:any)=>currency==="USD"?x.currency==="USD":x.currency!=="USD").reduce((a:number,x:any)=>a+Number(x[key]||0),0);
+   setC({students:s.count||0,teachers:t.count||0,classes:k.count||0,fcIncome:sum(p.data||[],"FC"),usdIncome:sum(p.data||[],"USD"),fcExpenses:sum(e.data||[],"FC"),usdExpenses:sum(e.data||[],"USD")});
+   setDaily({enrollments:en.count||0,present:pr.count||0,absent:ab.count||0,fcIncome:sum(dp.data||[],"FC"),usdIncome:sum(dp.data||[],"USD"),fcExpenses:sum(de.data||[],"FC"),usdExpenses:sum(de.data||[],"USD"),payrollFC:sum(pa.data||[],"FC","net_salary"),payrollUSD:sum(pa.data||[],"USD","net_salary")});
+   setYear(y.data?.name||"Année scolaire");setLoaded(true);
  })()},[profile.school_id]);
-
  const financialRoles=["promoteur","directeur","finance","comptable"].includes(role);
-
- return (
-  <div>
-   <div className="head">
-    <div><h1>Tableau de bord</h1><p>{school?.name} • {year}</p></div>
-   </div>
-   <div className="cards">
-    <Stat title="Élèves" value={c.students} icon={<Users/>}/>
-    <Stat title="Enseignants" value={c.teachers} icon={<UserCog/>}/>
-    <Stat title="Classes" value={c.classes} icon={<BookOpen/>}/>
-    {financialRoles ? (
-     <>
-      <Stat title="Encaissements FC" value={money(c.fcIncome,"FC")} icon={<Wallet/>}/>
-      <Stat title="Encaissements USD" value={money(c.usdIncome,"USD")} icon={<Wallet/>}/>
-     </>
-    ) : null}
-   </div>
-   {financialRoles ? (
-    <div className="twoCols">
-     <div className="panel">
-      <h3>Situation financière</h3>
-      <div className="financeSummary">
-       <div><small>Encaissements FC</small><b>{money(c.fcIncome,"FC")}</b></div>
-       <div><small>Dépenses FC</small><b>{money(c.fcExpenses,"FC")}</b></div>
-       <div><small>Encaissements USD</small><b>{money(c.usdIncome,"USD")}</b></div>
-       <div><small>Dépenses USD</small><b>{money(c.usdExpenses,"USD")}</b></div>
-       <div><small>Solde FC</small><b>{money(c.fcIncome-c.fcExpenses,"FC")}</b></div>
-       <div><small>Solde USD</small><b>{money(c.usdIncome-c.usdExpenses,"USD")}</b></div>
-      </div>
-     </div>
-     <div className="panel">
-      <h3>Accès</h3>
-      <p><b>{profile.full_name||"Utilisateur"}</b><br/><span className="role">{profile.roles?.label}</span></p>
-      <span className="badge">Compte actif</span>
-     </div>
-    </div>
-   ) : null}
+ return <div>
+  <div className="head"><div><h1>Tableau de bord</h1><p>{school?.name} • {year} • Vue du jour : {new Date().toLocaleDateString("fr-FR")}</p></div></div>
+  <div className="cards"><Stat title="Élèves inscrits" value={c.students} icon={<Users/>}/><Stat title="Enseignants" value={c.teachers} icon={<UserCog/>}/><Stat title="Classes" value={c.classes} icon={<BookOpen/>}/>{financialRoles&&<><Stat title="Encaissements FC (cumul)" value={money(c.fcIncome,"FC")} icon={<Wallet/>}/><Stat title="Encaissements USD (cumul)" value={money(c.usdIncome,"USD")} icon={<Wallet/>}/></>}</div>
+  <div className="panel" style={{marginTop:18}}><h3>Activité quotidienne</h3><p style={{color:"#718096",fontSize:13,marginTop:-4}}>Chiffres calculés à partir des enregistrements du jour, sans données fictives.{!loaded?" Chargement des indicateurs…":""}</p>
+   <div className="cards"><Stat title="Nouvelles inscriptions" value={daily.enrollments} icon={<ClipboardList/>}/><Stat title="Présents enregistrés" value={daily.present} icon={<CalendarCheck/>}/><Stat title="Absents enregistrés" value={daily.absent} icon={<AlertTriangle/>}/></div>
+   {financialRoles&&<><h4 style={{marginTop:18}}>Finances du jour</h4><div className="financeSummary"><div><small>Encaissements FC</small><b>{money(daily.fcIncome,"FC")}</b></div><div><small>Dépenses FC</small><b>{money(daily.fcExpenses,"FC")}</b></div><div><small>Encaissements USD</small><b>{money(daily.usdIncome,"USD")}</b></div><div><small>Dépenses USD</small><b>{money(daily.usdExpenses,"USD")}</b></div><div><small>Paie du jour FC</small><b>{money(daily.payrollFC,"FC")}</b></div><div><small>Paie du jour USD</small><b>{money(daily.payrollUSD,"USD")}</b></div></div></>}
   </div>
- );
+  {financialRoles&&<div className="panel" style={{marginTop:18}}><h3>Situation financière cumulée</h3><div className="financeSummary"><div><small>Encaissements FC</small><b>{money(c.fcIncome,"FC")}</b></div><div><small>Dépenses FC</small><b>{money(c.fcExpenses,"FC")}</b></div><div><small>Encaissements USD</small><b>{money(c.usdIncome,"USD")}</b></div><div><small>Dépenses USD</small><b>{money(c.usdExpenses,"USD")}</b></div><div><small>Solde FC</small><b>{money(c.fcIncome-c.fcExpenses,"FC")}</b></div><div><small>Solde USD</small><b>{money(c.usdIncome-c.usdExpenses,"USD")}</b></div></div></div>}
+  <div className="panel" style={{marginTop:18}}><h3>Compte connecté</h3><p><b>{profile.full_name||"Utilisateur"}</b><br/><span className="role">{profile.roles?.label}</span></p><span className="badge">Compte actif</span></div>
+ </div>;
 }
 
 function Students({profile,can}:any){
