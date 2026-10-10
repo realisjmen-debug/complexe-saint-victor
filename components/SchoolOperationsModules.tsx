@@ -3,7 +3,7 @@ import {useEffect,useState} from "react";
 import {schoolSupabase as supabase} from "../lib/supabase";
 import {Bell, CreditCard, Bus, FileSpreadsheet, Utensils, BedDouble, Download, Plus, RefreshCw} from "lucide-react";
 
-type Props={profile:any;can:(feature:string,...roles:string[])=>boolean};
+type Props={profile:any;can:(feature:string,...roles:string[])=>boolean;activeModule:string};
 const tabs=[
  {id:"sms_notifications",label:"SMS automatiques",icon:Bell,table:"school_sms_logs"},
  {id:"electronic_payments",label:"Paiements électroniques",icon:CreditCard,table:"electronic_payments"},
@@ -21,7 +21,7 @@ const fields:Record<string,{name:string;label:string;type?:string;required?:bool
 };
 export default function SchoolOperationsModules({profile,can}:Props){
  const [tab,setTab]=useState(tabs[0].id),[rows,setRows]=useState<any[]>([]),[loading,setLoading]=useState(false),[notice,setNotice]=useState(""),[form,setForm]=useState<Record<string,string>>({}),[showForm,setShowForm]=useState(false);
- const active=tabs.find(t=>t.id===tab)!;
+ const active=tabs.find(t=>t.id===tab)||tabs[0];
  async function load(){setLoading(true);const {data,error}=await supabase.from(active.table).select("*").eq("school_id",profile.school_id).order("created_at",{ascending:false}).limit(250);if(error)setNotice(error.message);else{setRows(data||[]);setNotice("")}setLoading(false)}
  useEffect(()=>{load()},[tab,profile.school_id]);
  const permitted=can(tab,"promoteur","directeur","administrateur","finance","comptable","rh","secretaire","logisticien","surveillant","gestionnaire");
@@ -30,7 +30,7 @@ export default function SchoolOperationsModules({profile,can}:Props){
  const title=(r:any)=>r.name||r.title||r.payment_reference||r.recipient_name||r.file_name||r.item_name||r.id;
  const subtitle=(r:any)=>r.message||r.description||r.recipient_phone||r.provider||r.status||r.operation||"";
  return <section className="space-y-5"><div><h2 className="text-2xl font-bold">Services scolaires complémentaires</h2><p className="text-sm opacity-70">Messagerie, paiements, transport, échanges de fichiers, cantine et internat.</p></div>
- <div className="grid grid-cols-2 gap-2 md:grid-cols-3">{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} className={"rounded-xl border p-3 text-left text-sm font-semibold "+(tab===t.id?"border-blue-600 bg-blue-50 text-blue-900":"")}><t.icon size={18} className="mb-2"/>{t.label}</button>)}</div>
+ 
  <div className="rounded-2xl border bg-white p-4 text-slate-900 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-bold">{active.label}</h3><p className="text-sm text-slate-500">{rows.length} enregistrement(s) chargé(s)</p></div><div className="flex gap-2"><button onClick={load} className="rounded-lg border px-3 py-2 text-sm"><RefreshCw size={15} className="mr-1 inline"/>Actualiser</button><button onClick={exportCsv} className="rounded-lg border px-3 py-2 text-sm"><Download size={15} className="mr-1 inline"/>Exporter CSV</button>{permitted&&fields[active.table]&&<button onClick={()=>setShowForm(!showForm)} className="rounded-lg bg-blue-700 px-3 py-2 text-sm text-white"><Plus size={15} className="mr-1 inline"/>Ajouter</button>}</div></div>
  {notice&&<p className="my-3 rounded-lg bg-blue-50 p-3 text-sm">{notice}</p>}
  {showForm&&<div className="my-4 grid gap-3 rounded-xl border bg-slate-50 p-4 md:grid-cols-2">{(fields[active.table]||[]).map(f=><label key={f.name} className="text-sm font-medium">{f.label}<input required={f.required} type={f.type||"text"} value={form[f.name]||""} onChange={e=>setForm({...form,[f.name]:e.target.value})} className="mt-1 block w-full rounded-lg border bg-white px-3 py-2 font-normal"/></label>)}<div className="flex gap-2 md:col-span-2"><button onClick={save} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Enregistrer</button><button onClick={()=>setShowForm(false)} className="rounded-lg border px-4 py-2">Annuler</button></div></div>}
