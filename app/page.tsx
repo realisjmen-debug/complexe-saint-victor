@@ -69,7 +69,7 @@ export default function Home(){
   ["studentFinance","Situation financière des élèves",Wallet,can("studentFinance","promoteur","directeur","finance","comptable")],
   ["staff","Personnel",UserCog,can("staff","promoteur","directeur","administrateur")],
   ["inventory","Stocks et matériel",Boxes,can("inventory","promoteur","administrateur","logisticien","secretaire")],
-  ["sms_notifications","SMS automatiques",MessageSquare,can("sms_notifications","promoteur","directeur","administrateur","secretaire","finance")],
+  ["sms_notifications","Notifications aux parents",MessageSquare,can("sms_notifications","promoteur","directeur","administrateur","secretaire","finance")],
   ["school_transport","Transport scolaire",Boxes,can("school_transport","promoteur","directeur","administrateur","logisticien","secretaire")],
   ["school_canteen","Cantine scolaire",HeartHandshake,can("school_canteen","promoteur","directeur","administrateur","gestionnaire","finance")],
   ["boarding_dormitory","Internat & dortoirs",School,can("boarding_dormitory","promoteur","directeur","administrateur","surveillant","secretaire")],
