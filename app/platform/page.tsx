@@ -10,6 +10,17 @@ type Plan={id:string;name:string;label:string;price_monthly:number;price_yearly:
 type Module={module_key:string;name:string;description:string;category:string;implementation_status:"available"|"in_development"|"planned";default_enabled:boolean};
 type SchoolModule={module_key:string;enabled:boolean};
 
+function uniqueModuleRows(rows:Module[]):Module[]{
+ const byName=new Map<string,Module>();
+ for(const m of rows){
+  const key=m.name.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  const previous=byName.get(key);
+  const rank=(x:Module)=>x.implementation_status==="available"?3:x.implementation_status==="in_development"?2:1;
+  if(!previous||rank(m)>rank(previous))byName.set(key,m);
+ }
+ return [...byName.values()].sort((a,b)=>a.category.localeCompare(b.category)||a.name.localeCompare(b.name));
+}
+
 export default function PlatformPage(){
  const [ok,setOk]=useState(false),[loading,setLoading]=useState(true),[schools,setSchools]=useState<School[]>([]),[plans,setPlans]=useState<Plan[]>([]),[name,setName]=useState(""),[slug,setSlug]=useState(""),[city,setCity]=useState("Kinshasa"),[plan,setPlan]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
  const [adminSchool,setAdminSchool]=useState<School|null>(null),[admin,setAdmin]=useState({full_name:"",email:"",phone:"",password:""});
@@ -33,7 +44,7 @@ export default function PlatformPage(){
      setSchools(s.data||[]);setPlans(p.data||[]);
      if(s.data?.length)setSelectedSchoolId(current=>current&&s.data.some((x:any)=>x.id===current)?current:s.data[0].id);
      const {data:moduleRows}=await supabase.from("module_catalog").select("module_key,name,description,category,implementation_status,default_enabled").order("category").order("name");
-     setModules((moduleRows||[]) as Module[]);
+     setModules(uniqueModuleRows((moduleRows||[]) as Module[]));
      if(!plan&&p.data?.[0])setPlan(p.data[0].id);
    }
    setLoading(false);
@@ -51,7 +62,7 @@ export default function PlatformPage(){
   if(!key||!newModule.name.trim()){setMsg("Nom et identifiant du domaine obligatoires.");setModuleBusy(false);return}
   const {error}=await supabase.from("module_catalog").insert({module_key:key,name:newModule.name.trim(),description:newModule.description.trim(),category:newModule.category.trim()||"Autres",implementation_status:"planned",default_enabled:false});
   if(error){setMsg("Ajout du domaine impossible : "+error.message);setModuleBusy(false);return}
-  setNewModule({name:"",key:"",category:"Autres",description:""});const {data}=await supabase.from("module_catalog").select("module_key,name,description,category,implementation_status,default_enabled").order("category").order("name");setModules((data||[]) as Module[]);
+  setNewModule({name:"",key:"",category:"Autres",description:""});const {data}=await supabase.from("module_catalog").select("module_key,name,description,category,implementation_status,default_enabled").order("category").order("name");setModules(uniqueModuleRows((data||[]) as Module[]));
   setMsg("Domaine ajouté au catalogue comme « À développer ». Son interface et ses règles métier devront être implémentées avant activation.");setModuleBusy(false)
  }
 
