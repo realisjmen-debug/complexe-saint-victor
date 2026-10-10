@@ -33,8 +33,8 @@ Deno.serve(async(req:Request)=>{
    return json({success:true,message:"Accès retiré. L’historique est conservé."});
   }
   if(action!=="update")return json({error:"Action inconnue."},400);
-  const fullName=String(body.full_name||"").trim(),phone=String(body.phone||"").trim(),roleName=String(body.role_name||"").trim().toLowerCase();
-  if(!fullName||!allowed.includes(roleName))return json({error:"Nom et rôle autorisé obligatoires."},400);
+  const fullName=String(body.full_name||"").trim(),phone=String(body.phone||"").trim(),roleName=String(body.role_name||"").trim().toLowerCase(),contractType=String(body.contract_type||"").trim(),staffDuties=String(body.staff_duties||"").trim(),salaryCurrency=String(body.salary_currency||"FC")==="USD"?"USD":"FC",salaryRaw=body.monthly_salary,monthlySalary=salaryRaw===undefined||salaryRaw===null||salaryRaw===""?null:Number(salaryRaw);
+  if(!fullName||!allowed.includes(roleName))return json({error:"Nom et rôle autorisé obligatoires."},400);if(monthlySalary!==null&&(!Number.isFinite(monthlySalary)||monthlySalary<0))return json({error:"Salaire invalide."},400);
   if(roleName==="promoteur")return json({error:"Le rôle Promoteur principal ne peut pas être attribué ici."},403);
   const {data:role,error:roleError}=await db.from("roles").select("id,name").eq("name",roleName).maybeSingle();
   if(roleError||!role)return json({error:"Rôle introuvable."},400);
@@ -43,9 +43,9 @@ Deno.serve(async(req:Request)=>{
    if(existingError)return json({error:existingError.message},400);
    if(existing?.length)return json({error:"Ce rôle est déjà attribué à une personne active dans cette école."},409);
   }
-  const {error}=await db.from("profiles").update({full_name:fullName,phone:phone||null,role_id:role.id,updated_at:new Date().toISOString()}).eq("id",targetId).eq("school_id",actor.school_id);
+  const {error}=await db.from("profiles").update({full_name:fullName,phone:phone||null,role_id:role.id,contract_type:contractType||null,monthly_salary:monthlySalary,salary_currency:salaryCurrency,staff_duties:staffDuties||null,updated_at:new Date().toISOString()}).eq("id",targetId).eq("school_id",actor.school_id);
   if(error)return json({error:"Modification impossible : "+error.message},400);
-  await db.from("school_audit_logs").insert({school_id:actor.school_id,actor_user_id:au.user.id,actor_name:au.user.email||"Utilisateur autorisé",action:"staff.updated",entity_table:"profiles",entity_id:targetId,after_data:{full_name:fullName,phone:phone||null,role_name:roleName}});
+  await db.from("school_audit_logs").insert({school_id:actor.school_id,actor_user_id:au.user.id,actor_name:au.user.email||"Utilisateur autorisé",action:"staff.updated",entity_table:"profiles",entity_id:targetId,after_data:{full_name:fullName,phone:phone||null,role_name:roleName,contract_type:contractType||null,monthly_salary:monthlySalary,salary_currency:salaryCurrency,staff_duties:staffDuties||null}});
   return json({success:true,message:"Personnel modifié."});
  }catch(e){return json({error:e instanceof Error?e.message:"Erreur serveur."},500)}
 });
